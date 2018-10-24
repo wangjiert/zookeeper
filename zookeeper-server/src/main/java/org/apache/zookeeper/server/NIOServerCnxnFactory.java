@@ -608,6 +608,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
     private final ConcurrentHashMap<Long, NIOServerCnxn> sessionMap =
         new ConcurrentHashMap<Long, NIOServerCnxn>();
     // ipMap is used to limit connections per IP
+    //每个ip上所有的连接
     private final ConcurrentHashMap<InetAddress, Set<NIOServerCnxn>> ipMap =
         new ConcurrentHashMap<InetAddress, Set<NIOServerCnxn>>( );
 
@@ -749,6 +750,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
         }
         // ensure thread is started once and only once
         if (acceptThread.getState() == Thread.State.NEW) {
+            //单独的线程监听socket连接
             acceptThread.start();
         }
         if (expirerThread.getState() == Thread.State.NEW) {
@@ -849,6 +851,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
         return new NIOServerCnxn(zkServer, sock, sk, this, selectorThread);
     }
 
+    //好像是返回每个ip有多少个连接
     private int getClientCnxnCount(InetAddress cl) {
         Set<NIOServerCnxn> s = ipMap.get(cl);
         if (s == null) return 0;

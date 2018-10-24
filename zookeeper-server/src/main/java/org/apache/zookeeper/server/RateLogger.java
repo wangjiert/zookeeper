@@ -21,6 +21,7 @@ package org.apache.zookeeper.server;
 import org.apache.zookeeper.common.Time;
 import org.slf4j.Logger;
 
+//带消息出现次数的logger
 public class RateLogger {
     public RateLogger(Logger log) {
         LOG = log;
