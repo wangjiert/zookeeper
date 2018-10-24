@@ -156,7 +156,10 @@ public class Util {
      * @return true if the snapshot is valid
      * @throws IOException
      */
+    //首先文件必须大于十字节
+    //文件的最后五个字节是固定的，前四个字节是1，最后一个字节是字符/
     public static boolean isValidSnapshot(File f) throws IOException {
+        //文件名不对
         if (f==null || Util.getZxidFromName(f.getName(), FileSnap.SNAPSHOT_FILE_PREFIX) == -1)
             return false;
 
@@ -171,6 +174,7 @@ public class Util {
             byte bytes[] = new byte[5];
             int readlen = 0;
             int l;
+            //5个字节都需要读的这么辛苦吗
             while (readlen < 5 &&
                     (l = raf.read(bytes, readlen, bytes.length - readlen)) >= 0) {
                 readlen += l;

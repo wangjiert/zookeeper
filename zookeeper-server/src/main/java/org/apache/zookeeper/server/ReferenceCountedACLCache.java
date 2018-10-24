@@ -38,12 +38,14 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ReferenceCountedACLCache {
     private static final Logger LOG = LoggerFactory.getLogger(ReferenceCountedACLCache.class);
 
+    //下面两个集合就是把key和value对调了一下 引用的是同一个对象
     final Map<Long, List<ACL>> longKeyMap =
             new HashMap<Long, List<ACL>>();
 
     final Map<List<ACL>, Long> aclKeyMap =
             new HashMap<List<ACL>, Long>();
 
+    //就是记录一下内部生成的acl被引用的次数
     final Map<Long, AtomicLongWithEquals> referenceCounter =
             new HashMap<Long, AtomicLongWithEquals>();
     private static final long OPEN_UNSAFE_ACL_ID = -1L;

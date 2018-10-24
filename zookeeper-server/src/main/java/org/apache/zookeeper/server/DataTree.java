@@ -98,6 +98,7 @@ public class DataTree {
     private IWatchManager childWatches;
 
     /** cached total size of paths and data for all DataNodes */
+    //记录所有节点的路径加上数据的长度
     private final AtomicLong nodeDataSize = new AtomicLong(0);
 
     /** the root of zookeeper tree */
@@ -244,12 +245,18 @@ public class DataTree {
      */
     private final DataNode quotaDataNode = new DataNode(new byte[0], -1L, new StatPersisted());
 
+    //整个树的思路是这样的
+    //首先树有一个map缓存了所有的路径对应的数据节点，然后每个节点有一个集合包含所有下一级节点的名字，
+    //这样通过拼接节点名就可以找到每个节点对应的datanode对象
     public DataTree() {
         /* Rather than fight it, let root have an alias */
+        //空和/对应的都是根节点
         nodes.put("", root);
         nodes.put(rootZookeeper, root);
 
         /** add the proc node and quota node */
+        //zookeeper节点
+        //就添加了一个节点的名字
         root.addChild(procChildZookeeper);
         nodes.put(procZookeeper, procDataNode);
 

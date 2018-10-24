@@ -148,6 +148,7 @@ public class FileSnap implements SnapShot {
      * @throws IOException
      */
     private List<File> findNValidSnapshots(int n) throws IOException {
+        //所有文件名按事务顺序倒序排列
         List<File> files = Util.sortDataDir(snapDir.listFiles(), SNAPSHOT_FILE_PREFIX, false);
         int count = 0;
         List<File> list = new ArrayList<File>();
@@ -156,6 +157,7 @@ public class FileSnap implements SnapShot {
             // from the valid snapshot and continue
             // until we find a valid one
             try {
+                //就靠最后五个字节真的可以保证文件内容是对的吗 为啥不用MD5校验呢
                 if (Util.isValidSnapshot(f)) {
                     list.add(f);
                     count++;

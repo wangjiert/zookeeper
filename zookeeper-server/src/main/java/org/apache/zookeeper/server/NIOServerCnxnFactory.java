@@ -613,6 +613,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
 
     protected int maxClientCnxns = 60;
 
+    //应该是会话多久没收到心跳就算超时吧
     int sessionlessCnxnTimeout;
     private ExpiryQueue<NIOServerCnxn> cnxnExpiryQueue;
 

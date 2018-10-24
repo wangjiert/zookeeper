@@ -43,11 +43,13 @@ public class DataNode implements Record {
     /**
      * the acl map long for this datanode. the datatree has the map
      */
+    //访问控制表
     Long acl;
 
     /**
      * the stat for this node that is persisted to disk.
      */
+    //好像是一些状态信息
     public StatPersisted stat;
 
     /**

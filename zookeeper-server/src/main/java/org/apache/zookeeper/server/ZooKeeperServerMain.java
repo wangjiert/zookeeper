@@ -122,6 +122,7 @@ public class ZooKeeperServerMain {
         FileTxnSnapLog txnLog = null;
         try {
             try {
+                //这个应该没什么用吧，默认的实现类什么也没做
                 metricsProvider = MetricsProviderBootstrap
                         .startMetricsProvider(config.getMetricsProviderClassName(),
                                               config.getMetricsProviderConfiguration());
@@ -149,9 +150,11 @@ public class ZooKeeperServerMain {
             // Start Admin server
             adminServer = AdminServerFactory.createAdminServer();
             adminServer.setZooKeeperServer(zkServer);
+            //现在是改了吗 接收客户端的请求变成了内嵌的jetty
             adminServer.start();
 
             boolean needStartZKServer = true;
+            //这里好像还是启动了自己的服务，上面的jetty应该是一个类似管理员界面的服务吧
             if (config.getClientPortAddress() != null) {
                 cnxnFactory = ServerCnxnFactory.createFactory();
                 cnxnFactory.configure(config.getClientPortAddress(), config.getMaxClientCnxns(), false);
