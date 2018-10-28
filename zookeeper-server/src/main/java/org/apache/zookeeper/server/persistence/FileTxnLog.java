@@ -116,6 +116,7 @@ public class FileTxnLog implements TxnLog {
         fsyncWarningThresholdMS = fsyncWarningThreshold;
     }
 
+    //记录看到的最大的事务id
     long lastZxidSeen;
     volatile BufferedOutputStream logStream = null;
     volatile OutputArchive oa;
@@ -123,6 +124,7 @@ public class FileTxnLog implements TxnLog {
 
     File logDir;
     private final boolean forceSync = !System.getProperty("zookeeper.forceSync", "yes").equals("no");
+    //就没变过
     long dbId;
     private LinkedList<FileOutputStream> streamsToFlush =
         new LinkedList<FileOutputStream>();
@@ -217,6 +219,7 @@ public class FileTxnLog implements TxnLog {
                 LOG.info("Creating new log file: " + Util.makeLogName(hdr.getZxid()));
            }
 
+           //文件名只是第一个记录的事务id
            logFileWrite = new File(logDir, Util.makeLogName(hdr.getZxid()));
            fos = new FileOutputStream(logFileWrite);
            logStream=new BufferedOutputStream(fos);
@@ -225,6 +228,7 @@ public class FileTxnLog implements TxnLog {
            fhdr.serialize(oa, "fileheader");
            // Make sure that the magic number is written before padding.
            logStream.flush();
+           //当前偏移量就是跳过了文件头
            filePadding.setCurrentSize(fos.getChannel().position());
            streamsToFlush.add(fos);
         }

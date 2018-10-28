@@ -43,6 +43,8 @@ public class FilePadding {
         }
     }
 
+    //刚开始在刚过文件头那里
+    //这个应该是记录的文件应该有的长度
     private long currentSize;
 
     /**
@@ -73,7 +75,9 @@ public class FilePadding {
      * @throws IOException
      */
     long padFile(FileChannel fileChannel) throws IOException {
+        //判断新的文件长度
         long newFileSize = calculateFileSizeWithPadding(fileChannel.position(), currentSize, preAllocSize);
+        //需要加长文件
         if (currentSize != newFileSize) {
             fileChannel.write((ByteBuffer) fill.position(0), newFileSize - fill.remaining());
             currentSize = newFileSize;
@@ -94,6 +98,7 @@ public class FilePadding {
      * @throws IOException
      */
     // VisibleForTesting
+    //第一个参数是文件当前偏移量，第二个参数是pad记录的位置
     public static long calculateFileSizeWithPadding(long position, long fileSize, long preAllocSize) {
         // If preAllocSize is positive and we are within 4KB of the known end of the file calculate a new file size
         if (preAllocSize > 0 && position + 4096 >= fileSize) {

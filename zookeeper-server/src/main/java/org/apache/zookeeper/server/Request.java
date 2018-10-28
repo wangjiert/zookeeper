@@ -60,14 +60,17 @@ public class Request {
 
     public final long sessionId;
 
+    //客户端传过来的
     public final int cxid;
 
     public final int type;
 
+    //请求的原始数据
     public final ByteBuffer request;
 
     public final ServerCnxn cnxn;
 
+    //信息冗余了吧 这个里面的信息包含其他字段
     private TxnHeader hdr;
 
     private Record txn;
@@ -78,6 +81,7 @@ public class Request {
 
     public final long createTime = Time.currentElapsedTime();
 
+    //一个定值 有什么用
     private Object owner;
 
     private KeeperException e;

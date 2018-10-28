@@ -53,6 +53,7 @@ public class FileSnap implements SnapShot {
     File snapDir;
     private volatile boolean close = false;
     private static final int VERSION = 2;
+    //看来这个东西根据文件类型不同而不同
     private static final long dbId = -1;
     private static final Logger LOG = LoggerFactory.getLogger(FileSnap.class);
     public final static int SNAP_MAGIC

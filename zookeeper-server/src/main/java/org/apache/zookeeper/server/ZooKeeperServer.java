@@ -104,6 +104,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
     protected SessionTracker sessionTracker;
     private FileTxnSnapLog txnLogFactory = null;
     private ZKDatabase zkDb;
+    //应该就是全局的事务标示吧
     private final AtomicLong hzxid = new AtomicLong(0);
     public final static Exception ok = new Exception("No prob");
     protected RequestProcessor firstProcessor;
@@ -648,6 +649,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
             this.acl = acl;
         }
 
+        //创建的时候设置的是-1 复制的时候会设置成真正的事务id
         long zxid;
 
         String path;
