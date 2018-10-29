@@ -66,7 +66,9 @@ public enum ServerMetrics {
     DIFF_COUNT(new SimpleCounter("diff_count")),
     SNAP_COUNT(new SimpleCounter("snap_count")),
     COMMIT_COUNT(new SimpleCounter("commit_count")),
+    //统计总的连接数
     CONNECTION_REQUEST_COUNT(new SimpleCounter("connection_request_count")),
+    //用于统计收到了多少个字节
     BYTES_RECEIVED_COUNT(new SimpleCounter("bytes_received_count"));
 
     private final Metric metric;

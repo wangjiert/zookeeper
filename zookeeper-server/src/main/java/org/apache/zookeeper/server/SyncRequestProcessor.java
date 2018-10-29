@@ -106,8 +106,10 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements
             while (true) {
                 Request si = null;
                 if (toFlush.isEmpty()) {
+                    //等待的拿
                     si = queuedRequests.take();
                 } else {
+                    //不等待的拿
                     si = queuedRequests.poll();
                     if (si == null) {
                         flush(toFlush);

@@ -42,6 +42,7 @@ public class Request {
         this.sessionId = sessionId;
         this.cxid = xid;
         this.type = type;
+        //这个好像是超时
         this.request = bb;
         this.authInfo = authInfo;
     }
@@ -60,6 +61,7 @@ public class Request {
 
     public final long sessionId;
 
+    //每个session创建的时候从0开始
     public final int cxid;
 
     public final int type;
@@ -68,8 +70,12 @@ public class Request {
 
     public final ServerCnxn cnxn;
 
+    //下面两个有关系吗
+    //看名字像是事务头
     private TxnHeader hdr;
 
+    //看着像是一个新建的事务相关的对象
+    //这个里面好像没有事务相关的
     private Record txn;
 
     public long zxid = -1;

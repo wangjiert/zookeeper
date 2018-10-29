@@ -155,6 +155,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
         LOG.info("PrepRequestProcessor exited loop!");
     }
 
+    //path是正在处理节点的父级
     private ChangeRecord getRecordForPath(String path) throws KeeperException.NoNodeException {
         ChangeRecord lastChange = null;
         synchronized (zks.outstandingChanges) {
@@ -576,6 +577,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 break;
             case OpCode.createSession:
                 request.request.rewind();
+                //超时时间好像
                 int to = request.request.getInt();
                 request.setTxn(new CreateSessionTxn(to));
                 request.request.rewind();
@@ -657,8 +659,11 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
         ChangeRecord parentRecord = getRecordForPath(parentPath);
 
         checkACL(zks, request.cnxn, parentRecord.acl, ZooDefs.Perms.CREATE, request.authInfo, path, listACL);
+        //子节点版本号
         int parentCVersion = parentRecord.stat.getCversion();
+        //序列节点
         if (createMode.isSequential()) {
+            //从这里看呢，子版本号应该只有在子节点加入的时候才会增加
             path = path + String.format(Locale.ENGLISH, "%010d", parentCVersion);
         }
         validatePath(path, request.sessionId);

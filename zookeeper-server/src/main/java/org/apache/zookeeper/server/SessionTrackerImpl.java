@@ -51,6 +51,7 @@ public class SessionTrackerImpl extends ZooKeeperCriticalThread implements
 
     private final ExpiryQueue<SessionImpl> sessionExpiryQueue;
 
+    //引用的是zookeeper server的集合对象
     private final ConcurrentMap<Long, Integer> sessionsWithTimeout;
     private final AtomicLong nextSessionId = new AtomicLong();
 
@@ -82,6 +83,9 @@ public class SessionTrackerImpl extends ZooKeeperCriticalThread implements
      */
     public static long initializeNextSession(long id) {
         long nextSid;
+        //最高的8位是服务端id
+        //接下来四十位是时间
+        //接下来十六位是0
         nextSid = (Time.currentElapsedTime() << 24) >>> 8;
         nextSid =  nextSid | (id <<56);
         if (nextSid == EphemeralType.CONTAINER_EPHEMERAL_OWNER) {
@@ -90,6 +94,7 @@ public class SessionTrackerImpl extends ZooKeeperCriticalThread implements
         return nextSid;
     }
 
+    //这个就是zookeeper server
     private final SessionExpirer expirer;
 
     public SessionTrackerImpl(SessionExpirer expirer,
@@ -254,6 +259,7 @@ public class SessionTrackerImpl extends ZooKeeperCriticalThread implements
         boolean added = false;
 
         SessionImpl session = sessionsById.get(id);
+        //看这里的逻辑 sessionImpl里面的超时时间应该没用呀 都没更改过
         if (session == null){
             session = new SessionImpl(id, sessionTimeout);
         }

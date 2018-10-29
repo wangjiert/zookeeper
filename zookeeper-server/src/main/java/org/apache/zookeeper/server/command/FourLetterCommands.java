@@ -91,6 +91,7 @@ public class FourLetterCommands {
      * See <a href="{@docRoot}/../../../docs/zookeeperAdmin.html#sc_zkCommands">
      * Zk Admin</a>. this link is for all the commands.
      */
+    //跟打印日志有关
     public final static int setTraceMaskCmd =
         ByteBuffer.wrap("stmk".getBytes()).getInt();
 

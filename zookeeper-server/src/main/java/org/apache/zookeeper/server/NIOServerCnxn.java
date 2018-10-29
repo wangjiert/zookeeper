@@ -55,6 +55,7 @@ import org.slf4j.LoggerFactory;
  * This class handles communication with clients using NIO. There is one per
  * client, but only one thread doing the communication.
  */
+//相当于连接对象，每一个客户端连接对应一个这个对象
 public class NIOServerCnxn extends ServerCnxn {
     private static final Logger LOG = LoggerFactory.getLogger(NIOServerCnxn.class);
 
@@ -191,6 +192,7 @@ public class NIOServerCnxn extends ServerCnxn {
      * processing an IO request. The flag is used to gatekeep pushing interest
      * op updates onto the selector.
      */
+    //是否能够select
     private final AtomicBoolean selectable = new AtomicBoolean(true);
 
     public boolean isSelectable() {
@@ -318,6 +320,7 @@ public class NIOServerCnxn extends ServerCnxn {
                 return;
             }
             if (k.isReadable()) {
+                //先读四字节
                 int rc = sock.read(incomingBuffer);
                 if (rc < 0) {
                     throw new EndOfStreamException(
@@ -325,6 +328,8 @@ public class NIOServerCnxn extends ServerCnxn {
                             + Long.toHexString(sessionId)
                             + ", likely client has closed socket");
                 }
+                //往buffer里面读的时候，current也在移动吗
+                //这里等于0表示读到了四个字节
                 if (incomingBuffer.remaining() == 0) {
                     boolean isPayload;
                     if (incomingBuffer == lenBuffer) { // start of next request
@@ -407,6 +412,7 @@ public class NIOServerCnxn extends ServerCnxn {
         return !throttled.get();
     }
 
+    //应该是表示这个连接是否还能继续读取数据
     private final AtomicBoolean throttled = new AtomicBoolean(false);
 
     // Throttle acceptance of new requests. If this entailed a state change,

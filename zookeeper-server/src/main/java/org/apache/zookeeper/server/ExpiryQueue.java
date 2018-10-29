@@ -45,6 +45,7 @@ public class ExpiryQueue<E> {
     private final ConcurrentHashMap<Long, Set<E>> expiryMap =
         new ConcurrentHashMap<Long, Set<E>>();
 
+    //下一次的超时时间
     private final AtomicLong nextExpirationTime = new AtomicLong();
     private final int expirationInterval;
 
@@ -53,6 +54,7 @@ public class ExpiryQueue<E> {
         nextExpirationTime.set(roundToNextInterval(Time.currentElapsedTime()));
     }
 
+    //这个方法就是保证超时时间一定是tick time的整倍数
     private long roundToNextInterval(long time) {
         return (time / expirationInterval + 1) * expirationInterval;
     }

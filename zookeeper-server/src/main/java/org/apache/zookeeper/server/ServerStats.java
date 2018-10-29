@@ -35,6 +35,7 @@ public class ServerStats {
     private static final Logger LOG = LoggerFactory.getLogger(ServerStats.class);
 
     private final AtomicLong packetsSent = new AtomicLong();
+    //收到了多少个请求
     private final AtomicLong packetsReceived = new AtomicLong();
 
     private final AvgMinMaxCounter requestLatency = new AvgMinMaxCounter("request_latency");
