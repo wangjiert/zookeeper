@@ -1009,6 +1009,7 @@ public class FastLeaderElection implements Election {
                                 recvset, new Vote(proposedLeader, proposedZxid,
                                         logicalclock.get(), proposedEpoch));
 
+                        //已经找到了一半的用户
                         if (voteSet.hasAllQuorums()) {
 
                             // Verify if there is any change in the proposed leader
