@@ -116,6 +116,7 @@ public class QuorumCnxManager {
      * Connection time out value in milliseconds
      */
 
+    //连接超时时间
     private int cnxTO = 5000;
 
     final QuorumPeer self;
@@ -127,6 +128,7 @@ public class QuorumCnxManager {
     final int socketTimeout;
     final Map<Long, QuorumPeer.QuorumServer> view;
     final boolean listenOnAllIPs;
+    //线程池有用过吗
     private ThreadPoolExecutor connectionExecutor;
     private final Set<Long> inprogressConnections = Collections
             .synchronizedSet(new HashSet<Long>());
@@ -141,13 +143,16 @@ public class QuorumCnxManager {
     /*
      * Mapping from Peer to Thread number
      */
+    //key都是服务端编号
     final ConcurrentHashMap<Long, SendWorker> senderWorkerMap;
+    //发送线程会从里面拿数据
     final ConcurrentHashMap<Long, ArrayBlockingQueue<ByteBuffer>> queueSendMap;
     final ConcurrentHashMap<Long, ByteBuffer> lastMessageSent;
 
     /*
      * Reception queue
      */
+    //从socket里面读的数据
     public final ArrayBlockingQueue<Message> recvQueue;
     /*
      * Object to synchronize access to recvQueue
@@ -168,6 +173,7 @@ public class QuorumCnxManager {
     /*
      * Counter to count worker threads
      */
+    //接受线程的数量
     private AtomicInteger threadCnt = new AtomicInteger(0);
 
     /*
@@ -450,6 +456,7 @@ public class QuorumCnxManager {
             closeSocket(sock);
             // Otherwise proceed with the connection
         } else {
+            //加到集合里面的数据会自动写
             SendWorker sw = new SendWorker(sock, sid);
             RecvWorker rw = new RecvWorker(sock, din, sid, sw);
             sw.setRecv(rw);
@@ -564,6 +571,7 @@ public class QuorumCnxManager {
         // do authenticating learner
         authServer.authenticate(sock, din);
         //If wins the challenge, then close the new connection.
+        //只能是编号大的主动连接编号小的
         if (sid < self.getId()) {
             /*
              * This replica might still believe that the connection to sid is

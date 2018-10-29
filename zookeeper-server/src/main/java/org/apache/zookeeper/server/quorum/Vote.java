@@ -85,12 +85,15 @@ public class Vote {
 
     final private int version;
 
+    //服务端的id
     final private long id;
     
     final private long zxid;
-    
+
+    //初始化为-1 感觉是这个个投票的轮数
     final private long electionEpoch;
-    
+
+    //被推举节点的的epoch
     final private long peerEpoch;
     
     public int getVersion() {
@@ -117,6 +120,7 @@ public class Vote {
         return state;
     }
 
+    //被推举的节点的状态
     final private ServerState state;
     
     @Override

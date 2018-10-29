@@ -41,10 +41,11 @@ import org.slf4j.LoggerFactory;
  */
 public class WatchManager implements IWatchManager {
     private static final Logger LOG = LoggerFactory.getLogger(WatchManager.class);
-
+    //存放监听器的地方
     private final Map<String, Set<Watcher>> watchTable =
         new HashMap<String, Set<Watcher>>();
 
+    //应该就是跟上面的反过来
     private final Map<Watcher, Set<String>> watch2Paths =
         new HashMap<Watcher, Set<String>>();
 

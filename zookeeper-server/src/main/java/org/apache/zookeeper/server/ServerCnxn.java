@@ -181,11 +181,13 @@ public abstract class ServerCnxn implements Stats, Watcher {
     protected long minLatency;
     protected long maxLatency;
     protected String lastOp;
+    //最后的处理的事务
     protected long lastCxid;
     protected long lastZxid;
     protected long lastResponseTime;
     protected long lastLatency;
 
+    //处理的次数吧
     protected long count;
     protected long totalLatency;
 

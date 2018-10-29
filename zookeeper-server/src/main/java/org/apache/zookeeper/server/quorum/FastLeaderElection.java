@@ -199,7 +199,9 @@ public class FastLeaderElection implements Election {
         long peerEpoch;
     }
 
+    //选举数据最开始被加的地方 然后会把这个里面的数据用listen发送出去
     LinkedBlockingQueue<ToSend> sendqueue;
+    //应该是选举对象吧结果加进来的吧
     LinkedBlockingQueue<Notification> recvqueue;
 
     /**
@@ -540,7 +542,9 @@ public class FastLeaderElection implements Election {
 
     QuorumPeer self;
     Messenger messenger;
+    //记录了这是第几次进行master选举
     AtomicLong logicalclock = new AtomicLong(); /* Election instance */
+    //投票的三个重要值 每次收到新的投票的时候都会更新
     long proposedLeader;
     long proposedZxid;
     long proposedEpoch;

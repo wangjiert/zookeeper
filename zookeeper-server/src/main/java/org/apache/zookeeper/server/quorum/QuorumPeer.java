@@ -127,14 +127,19 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
     private ZKDatabase zkDb;
 
     public static class QuorumServer {
+        //服务端地址
         public InetSocketAddress addr = null;
 
+        //选举地址
         public InetSocketAddress electionAddr = null;
-        
+        //客户端地址
         public InetSocketAddress clientAddr = null;
-        
+
+        //服务端编号
         public long id;
 
+        //像是可以接受的客户端地址
+        //后来又被覆盖了
         public String hostname;
         
         public LearnerType type = LearnerType.PARTICIPANT;
@@ -208,7 +213,10 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         public QuorumServer(long sid, String addressStr) throws ConfigException {
             // LOG.warn("sid = " + sid + " addressStr = " + addressStr);
             this.id = sid;
+            //可以有一个或者两个
             String serverClientParts[] = addressStr.split(";");
+            //可以有三个或者四个
+            //如果是四个的话 最后一个就是类型
             String serverParts[] = ConfigUtils.getHostAndPort(serverClientParts[0]);
             if ((serverClientParts.length > 2) || (serverParts.length < 3)
                     || (serverParts.length > 4)) {
@@ -453,6 +461,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
     /**
      * My id
      */
+    //当前服务端的编号
     private long myid;
 
 
@@ -482,6 +491,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
     /**
      * This is who I think the leader currently is.
      */
+    //准备投出去的票
     volatile private Vote currentVote;
 
     public synchronized Vote getCurrentVote(){
@@ -776,9 +786,11 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             myClientAddr = addr;
         }
     }
-    
+
+    //这个决定了选举的算法
     private int electionType;
 
+    //选举算法
     Election electionAlg;
 
     ServerCnxnFactory cnxnFactory;
@@ -1045,6 +1057,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             qcm = createCnxnManager();
             QuorumCnxManager.Listener listener = qcm.listener;
             if(listener != null){
+                //开始等待连接进来
                 listener.start();
                 FastLeaderElection fle = new FastLeaderElection(this, qcm);
                 fle.start();
@@ -1804,6 +1817,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
     }
 
     private long acceptedEpoch = -1;
+    //逻辑时钟 用于判断多个投票是否在同一个周期
     private long currentEpoch = -1;
 
     public static final String CURRENT_EPOCH_FILENAME = "currentEpoch";

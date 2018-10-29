@@ -69,6 +69,7 @@ public class Request {
     //请求的原始数据
     public final ByteBuffer request;
 
+    //连接对应的服务端
     public final ServerCnxn cnxn;
 
     //信息冗余了吧 这个里面的信息包含其他字段
