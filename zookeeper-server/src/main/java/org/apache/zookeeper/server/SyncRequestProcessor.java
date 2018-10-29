@@ -60,6 +60,7 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements
      * disk. Basically this is the list of SyncItems whose callbacks will be
      * invoked after flush returns successfully.
      */
+    //各种请求
     private final LinkedList<Request> toFlush = new LinkedList<Request>();
     private final Random r = new Random();
     /**
@@ -116,6 +117,7 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements
                         continue;
                     }
                 }
+                //关闭服务端请求
                 if (si == requestOfDeath) {
                     break;
                 }
@@ -126,14 +128,17 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements
                         if (logCount > (snapCount / 2 + randRoll)) {
                             randRoll = r.nextInt(snapCount/2);
                             // roll the log
+                            //就是要新建文件了
                             zks.getZKDatabase().rollLog();
                             // take a snapshot
+                            //上一次的还没处理完
                             if (snapInProcess != null && snapInProcess.isAlive()) {
                                 LOG.warn("Too busy to snap, skipping");
                             } else {
                                 snapInProcess = new ZooKeeperThread("Snapshot Thread") {
                                         public void run() {
                                             try {
+                                                //这里应该要把一个集合里面的东西都写完吧
                                                 zks.takeSnapshot();
                                             } catch(Exception e) {
                                                 LOG.warn("Unexpected exception", e);

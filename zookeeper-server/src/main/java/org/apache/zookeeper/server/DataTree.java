@@ -819,6 +819,7 @@ public class DataTree {
 
     }
 
+    //这个代表了上次拍快照时的事务id吧
     public volatile long lastProcessedZxid = 0;
 
     public ProcessTxnResult processTxn(TxnHeader header, Record txn) {

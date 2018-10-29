@@ -310,8 +310,10 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 return;
             }
         }
+        //acl是父节点的权限
         for (ACL a : acl) {
             Id id = a.getId();
+            //找到指定权限对应的授权信息
             if ((a.getPerms() & perm) != 0) {
                 if (id.getScheme().equals("world")
                         && id.getId().equals("anyone")) {
@@ -320,6 +322,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 ServerAuthenticationProvider ap = ProviderRegistry.getServerProvider(id
                         .getScheme());
                 if (ap != null) {
+                    //ids是这个连接拥有的信息
                     for (Id authId : ids) {
                         if (authId.getScheme().equals(id.getScheme())
                                 && ap.matches(new ServerAuthenticationProvider.ServerObjs(zks, cnxn),
@@ -358,6 +361,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
      * @param request
      * @param record
      */
+    //zxid是zookeeper内部的分配的事务id
     protected void pRequest2Txn(int type, long zxid, Request request,
                                 Record record, boolean deserialize)
         throws KeeperException, IOException, RequestProcessorException
@@ -655,9 +659,11 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
         validateCreateRequest(path, createMode, request, ttl);
         String parentPath = validatePathForCreate(path, request.sessionId);
 
+        //好像只是验证了一下acl设置对不对
         List<ACL> listACL = fixupACL(path, request.authInfo, acl);
         ChangeRecord parentRecord = getRecordForPath(parentPath);
 
+        //检查这个连接是否能创建这个节点
         checkACL(zks, request.cnxn, parentRecord.acl, ZooDefs.Perms.CREATE, request.authInfo, path, listACL);
         //子节点版本号
         int parentCVersion = parentRecord.stat.getCversion();
@@ -666,6 +672,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
             //从这里看呢，子版本号应该只有在子节点加入的时候才会增加
             path = path + String.format(Locale.ENGLISH, "%010d", parentCVersion);
         }
+        //验证地址的非法字符
         validatePath(path, request.sessionId);
         try {
             if (getRecordForPath(path) != null) {
@@ -937,6 +944,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
             if (request.getException() != null) {
                 throw request.getException();
             }
+            //主要就是检查owner换没
             zks.sessionTracker.checkGlobalSession(request.sessionId,
                     request.getOwner());
         } else {
@@ -955,6 +963,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
      * @return verified and expanded ACLs
      * @throws KeeperException.InvalidACLException
      */
+    //acls里面的每个权限都需要满足
     private List<ACL> fixupACL(String path, List<Id> authInfo, List<ACL> acls)
         throws KeeperException.InvalidACLException {
         // check for well formed ACLs

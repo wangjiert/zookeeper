@@ -61,17 +61,17 @@ public class Request {
 
     public final long sessionId;
 
-    //每个session创建的时候从0开始
+    //客户端传过来的
     public final int cxid;
 
     public final int type;
 
+    //请求的原始数据
     public final ByteBuffer request;
 
     public final ServerCnxn cnxn;
 
-    //下面两个有关系吗
-    //看名字像是事务头
+    //信息冗余了吧 这个里面的信息包含其他字段
     private TxnHeader hdr;
 
     //看着像是一个新建的事务相关的对象
@@ -84,6 +84,7 @@ public class Request {
 
     public final long createTime = Time.currentElapsedTime();
 
+    //一个定值 有什么用
     private Object owner;
 
     private KeeperException e;
