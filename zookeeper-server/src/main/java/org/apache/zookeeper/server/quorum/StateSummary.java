@@ -23,7 +23,9 @@ package org.apache.zookeeper.server.quorum;
  * how two different states are compared.
  */
 public class StateSummary {
+	//当前选举的版本号
 	private long currentEpoch;
+	//当前事务id
 	private long lastZxid;
 	public StateSummary(long currentEpoch, long lastZxid) {
 		this.currentEpoch = currentEpoch;
