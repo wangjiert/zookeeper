@@ -352,6 +352,7 @@ public class Leader {
      * This message type is enchanged between follower and leader (initiated by
      * follower) to determine liveliness.
      */
+    //心跳
     final static int PING = 5;
 
     /**

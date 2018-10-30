@@ -22,7 +22,9 @@ package org.apache.zookeeper;
  * a class that represents the stats associated with quotas
  */
 public class StatsTrack {
+    //该节点以及所有字节点的总数
     private int count;
+    //该节点以及所有字节点的数据的长度和
     private long bytes;
     private String countStr = "count";
     private String byteStr = "bytes";

@@ -143,15 +143,17 @@ public class FastLeaderElection implements Election {
      * of reception of notification.
      */
     static public class ToSend {
+        //notification表示是投票的信息
         static enum mType {crequest, challenge, notification, ack}
 
         ToSend(mType type,
-                long leader,
-                long zxid,
-                long electionEpoch,
-                ServerState state,
-                long sid,
-                long peerEpoch,
+                long leader,//选举为mater的节点的sid
+                long zxid,//选举为master的节点的事务id
+                long electionEpoch,//当前节点处于第几代选举
+                ServerState state,//选举为master的节点的当前状态
+                long sid,//发送目的节点的sid
+                long peerEpoch,//选举为master的节点当前处于选举的第几代
+                //这个是集群中所有节点的信息
                 byte[] configData) {
 
             this.leader = leader;
@@ -201,7 +203,7 @@ public class FastLeaderElection implements Election {
 
     //选举数据最开始被加的地方 然后会把这个里面的数据用listen发送出去
     LinkedBlockingQueue<ToSend> sendqueue;
-    //应该是选举对象吧结果加进来的吧
+    //读线程从listen里面的集合读出来然后加到里面
     LinkedBlockingQueue<Notification> recvqueue;
 
     /**
@@ -499,6 +501,7 @@ public class FastLeaderElection implements Election {
 
         WorkerSender ws;
         WorkerReceiver wr;
+        //把sendqueue里面的数据放到queueSendMap里面
         Thread wsThread = null;
         Thread wrThread = null;
 
@@ -543,10 +546,13 @@ public class FastLeaderElection implements Election {
     QuorumPeer self;
     Messenger messenger;
     //记录了这是第几次进行master选举
+    //和epoch感觉值是不是相同呀
     AtomicLong logicalclock = new AtomicLong(); /* Election instance */
     //投票的三个重要值 每次收到新的投票的时候都会更新
+    //最开始的时候被重置为-1
     long proposedLeader;
     long proposedZxid;
+    //这个启动的时候没有被重置
     long proposedEpoch;
 
 
@@ -906,21 +912,27 @@ public class FastLeaderElection implements Election {
            self.start_fle = Time.currentElapsedTime();
         }
         try {
+            //每个服务端发送过来的投票
             Map<Long, Vote> recvset = new HashMap<Long, Vote>();
 
+            //干什么的
             Map<Long, Vote> outofelection = new HashMap<Long, Vote>();
 
             int notTimeout = finalizeWait;
 
             synchronized(this){
+                //从这里看的话 好像还真是每完成一次选举之后logicalclick才增加1
                 logicalclock.incrementAndGet();
+                //每次投票第一次都是自己
                 updateProposal(getInitId(), getInitLastLoggedZxid(), getPeerEpoch());
             }
 
             LOG.info("New election. My id =  " + self.getId() +
                     ", proposed zxid=0x" + Long.toHexString(proposedZxid));
+            //把向一个节点发送的投票加入到集合中 等待另外的线程取了之后进行发送
             sendNotifications();
 
+            //这个东西很有用啊 每一次收到投票都会通过这个判断是否有过半的投票指定同一个节点
             SyncedLearnerTracker voteSet;
 
             /*
@@ -1026,6 +1038,7 @@ public class FastLeaderElection implements Election {
                              * This predicate is true once we don't read any new
                              * relevant message from the reception queue
                              */
+                            //没有找到比之前那个更适合的master了
                             if (n == null) {
                                 setPeerState(proposedLeader, voteSet);
 

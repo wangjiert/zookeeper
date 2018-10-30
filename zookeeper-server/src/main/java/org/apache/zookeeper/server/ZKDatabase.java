@@ -71,8 +71,10 @@ public class ZKDatabase {
      * all these members.
      */
     protected DataTree dataTree;
+    //每个会话的超时时间 value应该是过多久超时而不是超时的具体时间
     protected ConcurrentHashMap<Long, Integer> sessionsWithTimeouts;
     protected FileTxnSnapLog snapLog;
+    //记录的应该是提交时的事务id
     protected long minCommittedLog, maxCommittedLog;
 
     /**
@@ -84,8 +86,10 @@ public class ZKDatabase {
 
     public static final int commitLogCount = 500;
     protected static int commitLogBuffer = 700;
+    //不知道是啥 反正是master传过来的
     protected LinkedList<Proposal> committedLog = new LinkedList<Proposal>();
     protected ReentrantReadWriteLock logLock = new ReentrantReadWriteLock();
+    //标志是否已经初始化了
     volatile private boolean initialized = false;
 
     /**
@@ -132,14 +136,18 @@ public class ZKDatabase {
      * the clear method does clear out all the
      * data structures in zkdatabase.
      */
+    //哪些数据没有清空呢
     public void clear() {
         minCommittedLog = 0;
         maxCommittedLog = 0;
         /* to be safe we just create a new
          * datatree.
          */
+        //默认的实现什么也没做
         dataTree.shutdownWatcher();
+        //新建一个数据树
         dataTree = createDataTree();
+        //清空会话超时时间
         sessionsWithTimeouts.clear();
         WriteLock lock = logLock.writeLock();
         try {
@@ -558,6 +566,7 @@ public class ZKDatabase {
      * @param ia the input archive you want to deserialize from
      * @throws IOException
      */
+    //用流里面的数据重新创建一个快照
     public void deserializeSnapshot(InputArchive ia) throws IOException {
         clear();
         SerializeUtils.deserializeSnapshot(getDataTree(),ia,getSessionWithTimeOuts());

@@ -93,6 +93,7 @@ public class DataTree {
     private final ConcurrentHashMap<String, DataNode> nodes =
         new ConcurrentHashMap<String, DataNode>();
 
+    //监听节点的监听器好像就是这个吧
     private IWatchManager dataWatches;
 
     private IWatchManager childWatches;
@@ -138,6 +139,7 @@ public class DataTree {
     /**
      * This hashtable lists the paths of the ephemeral nodes of a session.
      */
+    //key是会话id value是这个会话的所有临时节点
     private final Map<Long, HashSet<String>> ephemerals =
         new ConcurrentHashMap<Long, HashSet<String>>();
 
@@ -248,9 +250,15 @@ public class DataTree {
     //整个树的思路是这样的
     //首先树有一个map缓存了所有的路径对应的数据节点，然后每个节点有一个集合包含所有下一级节点的名字，
     //这样通过拼接节点名就可以找到每个节点对应的datanode对象
+
+    //结构树的根节点是/和""
+    //空和/对应的都是根节点
+    //根节点下面有一个zookeeper节点
+    //zookeeper节点下面有一个quota节点 显示子节点在树中对应节点本身和其所有子节点个数和数据长度
+    //zookeeper节点下面还有一个config节点  存的是法定人数验证器的数据
     public DataTree() {
         /* Rather than fight it, let root have an alias */
-        //空和/对应的都是根节点
+
         nodes.put("", root);
         nodes.put(rootZookeeper, root);
 
@@ -263,10 +271,13 @@ public class DataTree {
         procDataNode.addChild(quotaChildZookeeper);
         nodes.put(quotaZookeeper, quotaDataNode);
 
+        //在/zookeeper节点下面放一个config 并设置为所有人可读,aversion为-1
         addConfigNode();
 
+        //计算整个数据树上面每个节点路径的长度加上节点上面数据的长度的总和
         nodeDataSize.set(approximateDataSize());
         try {
+            //创建节点数据的监听器和字节点监听器
             dataWatches = WatchManagerFactory.createWatchManager();
             childWatches = WatchManagerFactory.createWatchManager();
         } catch (Exception e) {
@@ -291,6 +302,8 @@ public class DataTree {
         nodes.put(configZookeeper, new DataNode(new byte[0], -1L, new StatPersisted()));
         try {
             // Reconfig node is access controlled by default (ZOOKEEPER-2014).
+            //配置config节点为所有人都可以读
+            //为什么把权限版本号设为-1呢
             setACL(configZookeeper, ZooDefs.Ids.READ_ACL_UNSAFE, -1);
         } catch (KeeperException.NoNodeException e) {
             assert false : "There's no " + configZookeeper +
@@ -1103,7 +1116,9 @@ public class DataTree {
      * a encapsultaing class for return value
      */
     private static class Counts {
+        //该节点以及所有的字节点的个数
         long bytes;
+        //该节点以及所有子节点的数据的长度和
         int count;
     }
 
@@ -1121,6 +1136,7 @@ public class DataTree {
             return;
         }
         String[] children = null;
+        //节点数据长度
         int len = 0;
         synchronized (node) {
             Set<String> childs = node.getChildren();
@@ -1164,6 +1180,7 @@ public class DataTree {
      *
      * @param path
      */
+    //不停的自调用 直到达到最后一层
     private void traverseNode(String path) {
         DataNode node = getNode(path);
         String children[] = null;
@@ -1176,6 +1193,7 @@ public class DataTree {
             // is the leaf node
             // check if its the leaf node
             String endString = "/" + Quotas.limitNode;
+            //相当于以指定字符开头 指定字符结尾 去中间的字符
             if (path.endsWith(endString)) {
                 // ok this is the limit node
                 // get the real node and update
@@ -1195,6 +1213,7 @@ public class DataTree {
     /**
      * this method sets up the path trie and sets up stats for quota nodes
      */
+    //一些限定的配置
     private void setupQuota() {
         String quotaPath = Quotas.quotaZookeeper;
         DataNode node = getNode(quotaPath);
@@ -1262,10 +1281,12 @@ public class DataTree {
     }
 
     public void deserialize(InputArchive ia, String tag) throws IOException {
+        //读取acl映射表
         aclCache.deserialize(ia);
         nodes.clear();
         pTrie.clear();
         nodeDataSize.set(0);
+        //path是完整的路径
         String path = ia.readString("path");
         while (!"/".equals(path)) {
             DataNode node = new DataNode();
@@ -1275,7 +1296,7 @@ public class DataTree {
                 aclCache.addUsage(node.acl);
             }
             int lastSlash = path.lastIndexOf('/');
-            if (lastSlash == -1) {
+            if (lastSlash == -1) {//真的有没有/的路径吗 难道根节点是用""写的 猜对了
                 root = node;
             } else {
                 String parentPath = path.substring(0, lastSlash);

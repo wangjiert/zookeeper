@@ -254,11 +254,14 @@ public class FileTxnLog implements TxnLog {
      * @param snapshotZxid return files at, or before this zxid
      * @return
      */
+    //找到所有事务id大于或者等于 接近或等于快照事务id的日志文件
     public static File[] getLogFiles(File[] logDirList,long snapshotZxid) {
+        //升序排列日志文件
         List<File> files = Util.sortDataDir(logDirList, LOG_FILE_PREFIX, true);
         long logZxid = 0;
         // Find the log file that starts before or at the same time as the
         // zxid of the snapshot
+        //找到接近快照事务或者等于的事务id
         for (File f : files) {
             long fzxid = Util.getZxidFromName(f.getName(), LOG_FILE_PREFIX);
             if (fzxid > snapshotZxid) {
@@ -590,7 +593,9 @@ public class FileTxnLog implements TxnLog {
          * @throws IOException
          */
         void init() throws IOException {
+            //里面文件是降序排列的
             storedFiles = new ArrayList<File>();
+            //降序排列所有事务id大于0的日志文件
             List<File> files = Util.sortDataDir(FileTxnLog.getLogFiles(logDir.listFiles(), 0), LOG_FILE_PREFIX, false);
             for (File f: files) {
                 if (Util.getZxidFromName(f.getName(), LOG_FILE_PREFIX) >= zxid) {

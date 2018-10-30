@@ -145,14 +145,14 @@ public class QuorumCnxManager {
      */
     //key都是服务端编号
     final ConcurrentHashMap<Long, SendWorker> senderWorkerMap;
-    //发送线程会从里面拿数据
+    //发送线程会从里面拿数据 数据是由选举对象的写进程加进来的
     final ConcurrentHashMap<Long, ArrayBlockingQueue<ByteBuffer>> queueSendMap;
     final ConcurrentHashMap<Long, ByteBuffer> lastMessageSent;
 
     /*
      * Reception queue
      */
-    //从socket里面读的数据
+    //从socket里面读的数据 会被选举对象的读进程不停的拿
     public final ArrayBlockingQueue<Message> recvQueue;
     /*
      * Object to synchronize access to recvQueue

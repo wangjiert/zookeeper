@@ -33,10 +33,12 @@ import org.apache.zookeeper.server.quorum.QuorumPeerConfig.ConfigException;
  * straightforward.
  * 
  */
+//法定人数验证器
 public class QuorumMaj implements QuorumVerifier {
     private Map<Long, QuorumServer> allMembers = new HashMap<Long, QuorumServer>();
     private Map<Long, QuorumServer> votingMembers = new HashMap<Long, QuorumServer>();
     private Map<Long, QuorumServer> observingMembers = new HashMap<Long, QuorumServer>();
+    //这个好像是事务id
     private long version = 0;
     //需要满足的投票人数
     private int half;

@@ -128,6 +128,7 @@ public class SerializeUtils {
             Map<Long, Integer> sessions) throws IOException {
         //看起来像是先写入了4字节表示有多少个会话
         //每个会话数据由8个字节表示会话id，4个字节表示超时时间
+        //首先读取会话超时map
         int count = ia.readInt("count");
         while (count > 0) {
             long id = ia.readLong("id");

@@ -35,6 +35,7 @@ public class BinaryInputArchive implements InputArchive {
     }
     
     static private class BinaryIndex implements Index {
+        //还需要读取的元素个数
         private int nelems;
         BinaryIndex(int nelems) {
             this.nelems = nelems;

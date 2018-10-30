@@ -415,6 +415,8 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
     /*
      * Record leader election time
      */
+    //记录选举的开始和结束时间
+    //本身没什么用主要用来计算差值,然后就会清空
     public long start_fle, end_fle; // fle = fast leader election
     public static final String FLE_TIME_UNIT = "MS";
 
@@ -565,6 +567,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
      * Keeps time taken for leader election in milliseconds. Sets the value to
      * this variable only after the completion of leader election.
      */
+    //本次选举花了多久
     private long electionTimeTaken = -1;
 
     /**

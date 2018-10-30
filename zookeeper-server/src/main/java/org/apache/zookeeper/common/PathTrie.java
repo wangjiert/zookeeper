@@ -53,6 +53,8 @@ public class PathTrie {
     private final TrieNode rootNode ;
     
     static class TrieNode {
+        //加节点的时候,会把每一次的最后一个节点设为true
+        //应该是有统计信息的节点就设为true
         boolean property = false;
         final Map<String, TrieNode> children;
         TrieNode parent = null;
@@ -262,6 +264,7 @@ public class PathTrie {
         int i = 1;
         String part = null;
         StringBuilder sb = new StringBuilder();
+        //最后一个有统计信息的节点的位置
         int lastindex = -1;
         while((i < pathComponents.length)) {
             if (parent.getChild(pathComponents[i]) != null) {

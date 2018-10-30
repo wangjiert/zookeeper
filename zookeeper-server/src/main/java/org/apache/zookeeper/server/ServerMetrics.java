@@ -61,7 +61,9 @@ public enum ServerMetrics {
     PROPAGATION_LATENCY(new AvgMinMaxCounter("propagation_latency")),
 
     FOLLOWER_SYNC_TIME(new AvgMinMaxCounter("follower_sync_time")),
+    //选举master花费的时间
     ELECTION_TIME(new AvgMinMaxCounter("election_time")),
+    //统计进行了多少次查找master
     LOOKING_COUNT(new SimpleCounter("looking_count")),
     DIFF_COUNT(new SimpleCounter("diff_count")),
     SNAP_COUNT(new SimpleCounter("snap_count")),

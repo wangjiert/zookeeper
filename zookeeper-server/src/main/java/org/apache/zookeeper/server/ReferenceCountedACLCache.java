@@ -38,6 +38,8 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ReferenceCountedACLCache {
     private static final Logger LOG = LoggerFactory.getLogger(ReferenceCountedACLCache.class);
 
+    //下面三个结合都有关联 第三个集合决定了是否删除前面两个集合的缓存
+
     //下面两个集合就是把key和value对调了一下 引用的是同一个对象
     final Map<Long, List<ACL>> longKeyMap =
             new HashMap<Long, List<ACL>>();
@@ -48,11 +50,13 @@ public class ReferenceCountedACLCache {
     //就是记录一下内部生成的acl被引用的次数
     final Map<Long, AtomicLongWithEquals> referenceCounter =
             new HashMap<Long, AtomicLongWithEquals>();
+    //也代表了没有指定权限列表的情况
     private static final long OPEN_UNSAFE_ACL_ID = -1L;
 
     /**
      * these are the number of acls that we have in the datatree
      */
+    //记录下一个可以用的acl key
     long aclIndex = 0;
 
     /**
@@ -169,11 +173,14 @@ public class ReferenceCountedACLCache {
         }
     }
 
+    //删除没有被引用的acl缓存
     public synchronized void removeUsage(Long acl) {
+        //系统默认创建的节点acl都是-1 所以直接返回
         if (acl == OPEN_UNSAFE_ACL_ID) {
             return;
         }
 
+        //还没有缓存这个acl对应的访问控制表也直接返回
         if (!longKeyMap.containsKey(acl)) {
             LOG.info("Ignoring acl " + acl + " as it does not exist in the cache");
             return;

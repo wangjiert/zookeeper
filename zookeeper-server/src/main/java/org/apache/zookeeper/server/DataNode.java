@@ -43,7 +43,8 @@ public class DataNode implements Record {
     /**
      * the acl map long for this datanode. the datatree has the map
      */
-    //访问控制表
+    //访问控制表在map中的key
+    //zookeeper自动创建的节点的acl默认是-1
     Long acl;
 
     /**
