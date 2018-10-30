@@ -74,6 +74,7 @@ public class FileSnap implements SnapShot {
         // we run through 100 snapshots (not all of them)
         // if we cannot get it running within 100 snapshots
         // we should  give up
+        //倒叙的文件
         List<File> snapList = findNValidSnapshots(100);
         if (snapList.size() == 0) {
             return -1L;

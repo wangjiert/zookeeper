@@ -397,6 +397,7 @@ public class FileTxnLog implements TxnLog {
      * @param zxid the zxid to truncate the logs to
      * @return true if successful false if not
      */
+    //就是删除事务id大的日志文件 包含该事务的日志文件截取到下一个事务头的地方
     public boolean truncate(long zxid) throws IOException {
         FileTxnIterator itr = null;
         try {
@@ -689,6 +690,7 @@ public class FileTxnLog implements TxnLog {
                 return false;
             }
             try {
+                //数据md5值
                 long crcValue = ia.readLong("crcvalue");
                 byte[] bytes = Util.readTxnBytes(ia);
                 // Since we preallocate, we define EOF to be an
