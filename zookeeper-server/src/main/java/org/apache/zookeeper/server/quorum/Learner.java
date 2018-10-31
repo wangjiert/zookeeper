@@ -345,8 +345,10 @@ public class Learner {
         final long newEpoch = ZxidUtils.getEpochFromZxid(qp.getZxid());
 		if (qp.getType() == Leader.LEADERINFO) {
         	// we are connected to a 1.0 server so accept the new epoch and read the next packet
+            //这个版本号是0x10000
         	leaderProtocolVersion = ByteBuffer.wrap(qp.getData()).getInt();
         	byte epochBytes[] = new byte[4];
+        	//存的是follower本身的epoch 如果和master相等就是-1
         	final ByteBuffer wrappedEpochBytes = ByteBuffer.wrap(epochBytes);
         	if (newEpoch > self.getAcceptedEpoch()) {
         		wrappedEpochBytes.putInt((int)self.getCurrentEpoch());

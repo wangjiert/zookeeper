@@ -79,12 +79,14 @@ public class LearnerHandler extends ZooKeeperThread {
     /**
      * ZooKeeper server identifier of this learner
      */
+    //follower的机器编号
     protected long sid = 0;
 
     long getSid(){
         return sid;
     }
 
+    //协议版本号
     protected int version = 0x1;
 
     int getVersion() {
@@ -395,11 +397,13 @@ public class LearnerHandler extends ZooKeeperThread {
                 }
                 if (learnerInfoData.length >= 20) {
                     long configVersion = bbsid.getLong();
+                    //看起来像是事务相关的
                     if (configVersion > leader.self.getQuorumVerifier().getVersion()) {
                         throw new IOException("Follower is ahead of the leader (has a later activated configuration)");
                     }
                 }
             } else {
+                //这样真的好吗 每个节点本来是有分配自己的id的
                 this.sid = leader.followerCounter.getAndDecrement();
             }
 
@@ -419,7 +423,9 @@ public class LearnerHandler extends ZooKeeperThread {
             long peerLastZxid;
             StateSummary ss = null;
             long zxid = qp.getZxid();
+            //的到最终稳定的的epoch
             long newEpoch = leader.getEpochToPropose(this.getSid(), lastAcceptedEpoch);
+            //新的事务id
             long newLeaderZxid = ZxidUtils.makeZxid(newEpoch, 0);
 
             if (this.getVersion() < 0x10000) {
@@ -429,6 +435,7 @@ public class LearnerHandler extends ZooKeeperThread {
                 // fake the message
                 leader.waitForEpochAck(this.getSid(), ss);
             } else {
+                //现在是走这个逻辑
                 byte ver[] = new byte[4];
                 ByteBuffer.wrap(ver).putInt(0x10000);
                 QuorumPacket newEpochPacket = new QuorumPacket(Leader.LEADERINFO, newLeaderZxid, ver, null);
@@ -441,10 +448,12 @@ public class LearnerHandler extends ZooKeeperThread {
                             + " is not ACKEPOCH");
                     return;
 				}
+				//这个值是follower传回来的自己的epoch
                 ByteBuffer bbepoch = ByteBuffer.wrap(ackEpochPacket.getData());
                 ss = new StateSummary(bbepoch.getInt(), ackEpochPacket.getZxid());
                 leader.waitForEpochAck(this.getSid(), ss);
             }
+            //follower当前的事务id
             peerLastZxid = ss.getLastZxid();
 
             // Take any necessary action if we need to send TRUNC or DIFF
@@ -697,9 +706,12 @@ public class LearnerHandler extends ZooKeeperThread {
          * zxid in our history. In this case, we will ignore TRUNC logic and
          * always send DIFF if we have old enough history
          */
+        //好像是表示follower没有处理新事务
         boolean isPeerNewEpochZxid = (peerLastZxid & 0xffffffffL) == 0;
         // Keep track of the latest zxid which already queued
+        //记录已经缓存的事务id
         long currentZxid = peerLastZxid;
+        //是否需要
         boolean needSnap = true;
         boolean txnLogSyncEnabled = db.isTxnLogSyncEnabled();
         ReentrantReadWriteLock lock = db.getLogLock();
@@ -708,6 +720,7 @@ public class LearnerHandler extends ZooKeeperThread {
             rl.lock();
             long maxCommittedLog = db.getmaxCommittedLog();
             long minCommittedLog = db.getminCommittedLog();
+            //master当前的事务id
             long lastProcessedZxid = db.getDataTreeLastProcessedZxid();
 
             LOG.info("Synchronizing with Follower sid: {} maxCommittedLog=0x{}"
@@ -753,11 +766,15 @@ public class LearnerHandler extends ZooKeeperThread {
                 // Force leader to use snapshot to sync with follower
                 LOG.warn("Forcing snapshot sync - should not see this in production");
             } else if (lastProcessedZxid == peerLastZxid) {
+                //master和follower的事务相同 不应该什么都不做吗
                 // Follower is already sync with us, send empty diff
                 LOG.info("Sending DIFF zxid=0x" + Long.toHexString(peerLastZxid) +
                          " for peer sid: " +  getSid());
+                //怎么还是往集合里面加了一个包呢
                 queueOpPacket(Leader.DIFF, peerLastZxid);
+                //不需要同步操作的意思吧
                 needOpPacket = false;
+                //不需要同步快照
                 needSnap = false;
             } else if (peerLastZxid > maxCommittedLog && !isPeerNewEpochZxid) {
                 // Newer than committedLog, send trunc and done
@@ -765,6 +782,7 @@ public class LearnerHandler extends ZooKeeperThread {
                           Long.toHexString(maxCommittedLog) +
                           " for peer sid:" +  getSid());
                 queueOpPacket(Leader.TRUNC, maxCommittedLog);
+                //代表follower当前应该截取到的位置
                 currentZxid = maxCommittedLog;
                 needOpPacket = false;
                 needSnap = false;
@@ -775,6 +793,7 @@ public class LearnerHandler extends ZooKeeperThread {
                 Iterator<Proposal> itr = db.getCommittedLog().iterator();
                 currentZxid = queueCommittedProposals(itr, peerLastZxid,
                                                      null, maxCommittedLog);
+                //这个只是说明了不需要快照 所以说之前的不需要op包的是不是根本不会发送集合里面的数据
                 needSnap = false;
             } else if (peerLastZxid < minCommittedLog && txnLogSyncEnabled) {
                 // Use txnlog and committedLog to sync
@@ -842,14 +861,18 @@ public class LearnerHandler extends ZooKeeperThread {
      */
     protected long queueCommittedProposals(Iterator<Proposal> itr,
             long peerLastZxid, Long maxZxid, Long lastCommittedZxid) {
+        //follower是不是从epoch改变之后还没开始写的事务
         boolean isPeerNewEpochZxid = (peerLastZxid & 0xffffffffL) == 0;
+        //应该是记录最后记录到的事务id
         long queuedZxid = peerLastZxid;
         // as we look through proposals, this variable keeps track of previous
         // proposal Id.
+        //follower当前事务的上一次的事务id
         long prevProposalZxid = -1;
         while (itr.hasNext()) {
             Proposal propose = itr.next();
 
+            //这个数据属于的事务id
             long packetZxid = propose.packet.getZxid();
             // abort if we hit the limit
             if ((maxZxid != null) && (packetZxid > maxZxid)) {

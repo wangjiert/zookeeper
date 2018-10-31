@@ -1819,6 +1819,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         }
     }
 
+    //这个是master传过来的
     private long acceptedEpoch = -1;
     //逻辑时钟 用于判断多个投票是否在同一个周期
     private long currentEpoch = -1;

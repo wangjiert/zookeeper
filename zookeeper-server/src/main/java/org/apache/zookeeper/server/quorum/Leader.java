@@ -104,6 +104,7 @@ public class Leader {
     volatile LearnerCnxAcceptor cnxAcceptor = null;
 
     // list of all the learners, including followers and observers
+    //相当与缓存所有的follower
     private final HashSet<LearnerHandler> learners =
         new HashSet<LearnerHandler>();
 
@@ -401,6 +402,7 @@ public class Leader {
             try {
                 while (!stop) {
                     try{
+                        //好像也没错 集群内部交互信息也走和外部一样的端口
                         Socket s = ss.accept();
 
                         // start with the initLimit, once the ack is processed
@@ -1263,6 +1265,8 @@ public class Leader {
         }
     }
 
+    //从这个方法来看呢 epoch好像在不停的涨 并不是选举完一次增加1
+    //这个方法会一直等待 直到有一半的follower加进来在返回
     public long getEpochToPropose(long sid, long lastAcceptedEpoch) throws InterruptedException, IOException {
         synchronized(connectingFollowers) {
             if (!waitingForNewEpoch) {
@@ -1275,6 +1279,7 @@ public class Leader {
                 connectingFollowers.add(sid);
             }
             QuorumVerifier verifier = self.getQuorumVerifier();
+            //已经有一般的follower连接了master
             if (connectingFollowers.contains(self.getId()) &&
                                             verifier.containsQuorum(connectingFollowers)) {
                 waitingForNewEpoch = false;

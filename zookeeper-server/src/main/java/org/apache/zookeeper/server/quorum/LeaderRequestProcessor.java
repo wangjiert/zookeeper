@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
  * Responsible for performing local session upgrade. Only request submitted
  * directly to the leader should go through this processor.
  */
+//感觉什么都没做啊直接丢给下一个处理器了 有点像防止超时一样
 public class LeaderRequestProcessor implements RequestProcessor {
     private static final Logger LOG = LoggerFactory
             .getLogger(LeaderRequestProcessor.class);

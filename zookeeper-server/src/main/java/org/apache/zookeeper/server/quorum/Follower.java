@@ -78,11 +78,13 @@ public class Follower extends Learner{
             QuorumServer leaderServer = findLeader();
             try {
                 connectToLeader(leaderServer.addr, leaderServer.hostname);
+                //返回新的事务id
                 long newEpochZxid = registerWithLeader(Leader.FOLLOWERINFO);
                 if (self.isReconfigStateChange())
                    throw new Exception("learned about role change");
                 //check to see if the leader zxid is lower than ours
                 //this should never happen but is just a safety check
+                //master的epoch
                 long newEpoch = ZxidUtils.getEpochFromZxid(newEpochZxid);
                 if (newEpoch < self.getAcceptedEpoch()) {
                     LOG.error("Proposed leader epoch " + ZxidUtils.zxidToString(newEpochZxid)

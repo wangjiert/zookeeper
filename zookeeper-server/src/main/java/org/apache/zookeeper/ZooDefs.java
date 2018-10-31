@@ -33,6 +33,7 @@ public class ZooDefs {
    @InterfaceAudience.Public
     public interface OpCode {
 
+       //应该是监听器相关的
         public final int notification = 0;
 
         public final int create = 1;
@@ -60,7 +61,8 @@ public class ZooDefs {
         public final int check = 13;
 
         public final int multi = 14;
-        
+
+        //和create有什么区别
         public final int create2 = 15;
 
         public final int reconfig = 16;
