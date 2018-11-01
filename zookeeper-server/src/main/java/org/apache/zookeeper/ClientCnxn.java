@@ -151,8 +151,10 @@ public class ClientCnxn {
 
     private final ClientWatchManager watcher;
 
+    //开始的时候是0
     private long sessionId;
 
+    //开始的时候就是全是0的一个字节数组
     private byte sessionPasswd[] = new byte[16];
 
     /**
@@ -393,6 +395,7 @@ public class ClientCnxn {
         this.hostProvider = hostProvider;
         this.chrootPath = chrootPath;
 
+        //超时时间怎么还是被所有可用连接地址平分的
         connectTimeout = sessionTimeout / hostProvider.size();
         readTimeout = sessionTimeout * 2 / 3;
         readOnly = canBeReadOnly;

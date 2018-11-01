@@ -41,8 +41,10 @@ import static org.apache.zookeeper.common.StringUtils.split;
 public final class ConnectStringParser {
     private static final int DEFAULT_PORT = 2181;
 
+    //这个连接的根结点
     private final String chrootPath;
 
+    //所有可用的服务器地址
     private final ArrayList<InetSocketAddress> serverAddresses = new ArrayList<InetSocketAddress>();
 
     /**
@@ -51,6 +53,8 @@ public final class ConnectStringParser {
      * @throws IllegalArgumentException
      *             for an invalid chroot path.
      */
+    //指定ip地址和端口的时候还可以顺便指定根路径
+    //多个地址用逗号隔开
     public ConnectStringParser(String connectString) {
         // parse out chroot, if any
         int off = connectString.indexOf('/');
