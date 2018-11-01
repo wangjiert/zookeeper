@@ -20,6 +20,7 @@ package org.apache.zookeeper;
 
 import org.apache.zookeeper.server.ExitCode;
 
+//实现接口就可以直接访问接口里面定义的变量了
 public class Version implements org.apache.zookeeper.version.Info {
 
     /*

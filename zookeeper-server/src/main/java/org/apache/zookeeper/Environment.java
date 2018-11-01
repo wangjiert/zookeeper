@@ -102,7 +102,9 @@ public class Environment {
 
         return l;
     }
-    
+
+    //就是把环境变量打印一遍
+    //msg是前缀
     public static void logEnv(String msg, Logger log) {
         List<Entry> env = Environment.list();
         for (Entry e : env) {

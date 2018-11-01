@@ -77,8 +77,10 @@ public class ZooDefs {
 
         public final int createTTL = 21;
 
+        //客户端发送授权信息的请求类型
         public final int auth = 100;
 
+        //客户端用来设置监听器的请求类型
         public final int setWatches = 101;
 
         public final int sasl = 102;

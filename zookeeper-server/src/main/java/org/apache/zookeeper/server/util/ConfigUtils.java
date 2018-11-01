@@ -68,6 +68,7 @@ public class ConfigUtils {
      *  IP address and the next being the port
      * @param s server config, server:port
      */
+    //ipv6的地址格式是[*]
     public static String[] getHostAndPort(String s)
         throws ConfigException
     {
@@ -80,6 +81,7 @@ public class ConfigUtils {
                 throw new ConfigException(s + " doesn't have a port after colon");
             }
             if (i + 2 < s.length()) {
+                //这个里之所以还分割一次是因为服务端也会用这个方法解析地址,而服务器的连接字符串是由多个冒号分割的值
                String[] sa = s.substring(i + 2).split(":");
                String[] nsa = new String[sa.length + 1];
                nsa[0] = s.substring(1, i);

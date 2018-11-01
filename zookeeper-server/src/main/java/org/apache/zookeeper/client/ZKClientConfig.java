@@ -49,11 +49,13 @@ public class ZKClientConfig extends ZKConfig {
      */
     public static final String DISABLE_AUTO_WATCH_RESET = "zookeeper.disableAutoWatchReset";
     @SuppressWarnings("deprecation")
+    //客户端连接服务端的socket实现类在配置中的key名字
     public static final String ZOOKEEPER_CLIENT_CNXN_SOCKET = ZooKeeper.ZOOKEEPER_CLIENT_CNXN_SOCKET;
     /**
      * Setting this to "true" will enable encrypted client-server communication.
      */
     @SuppressWarnings("deprecation")
+    //表示客户端是否使用安全连接在配置中的key
     public static final String SECURE_CLIENT = ZooKeeper.SECURE_CLIENT;
     public static final int CLIENT_MAX_PACKET_LENGTH_DEFAULT = 4096 * 1024; /* 4 MB */
     public static final String ZOOKEEPER_REQUEST_TIMEOUT = "zookeeper.request.timeout";
