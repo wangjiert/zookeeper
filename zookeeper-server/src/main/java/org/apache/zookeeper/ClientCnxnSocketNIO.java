@@ -288,6 +288,7 @@ public class ClientCnxnSocketNIO extends ClientCnxnSocket {
             sock.close();
             throw e;
         }
+        //为嘛设为false呢
         initialized = false;
 
         /*
@@ -340,6 +341,7 @@ public class ClientCnxnSocketNIO extends ClientCnxnSocket {
     }
     
     @Override
+    //ping的时间间隔应该大于select的阻塞时间 这样就不会因为读不到数据或者没有数据写而导致超时了
     void doTransport(int waitTimeOut, List<Packet> pendingQueue, ClientCnxn cnxn)
             throws IOException, InterruptedException {
         selector.select(waitTimeOut);

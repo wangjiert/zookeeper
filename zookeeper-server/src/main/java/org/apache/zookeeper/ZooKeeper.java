@@ -146,6 +146,8 @@ public class ZooKeeper implements AutoCloseable {
      *             instead.
      */
     @Deprecated
+    //客户端连接socket的类名在配置文件中的key
+    //已经换到专门的配置类里面了
     public static final String ZOOKEEPER_CLIENT_CNXN_SOCKET = "zookeeper.clientCnxnSocket";
     // Setting this to "true" will enable encrypted client-server communication.
 
@@ -154,16 +156,20 @@ public class ZooKeeper implements AutoCloseable {
      *             instead.
      */
     @Deprecated
+    //同上
     public static final String SECURE_CLIENT = "zookeeper.client.secure";
 
+    //客户端和服务端之前的连接对象 主要功能就是这个对象完成的
     protected final ClientCnxn cnxn;
     private static final Logger LOG;
     static {
         //Keep these two lines together to keep the initialization order explicit
         LOG = LoggerFactory.getLogger(ZooKeeper.class);
+        //打印环境变量
         Environment.logEnv("Client environment:", LOG);
     }
 
+    //用于解析服务端地址的
     protected final HostProvider hostProvider;
 
     /**
@@ -205,11 +211,13 @@ public class ZooKeeper implements AutoCloseable {
      *
      * @throws IOException in cases of network failure     
      */
+    //看来这个是要客户端自己调用来实现负载均衡了
     public void updateServerList(String connectString) throws IOException {
         ConnectStringParser connectStringParser = new ConnectStringParser(connectString);
         Collection<InetSocketAddress> serverAddresses = connectStringParser.getServerAddresses();
 
         ClientCnxnSocket clientCnxnSocket = cnxn.sendThread.getClientCnxnSocket();
+        //当前连接的服务端的地址
         InetSocketAddress currentHost = (InetSocketAddress) clientCnxnSocket.getRemoteSocketAddress();
 
         boolean reconfigMode = hostProvider.updateServerList(serverAddresses, currentHost);

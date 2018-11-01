@@ -126,13 +126,16 @@ public class ClientCnxn {
     /**
      * These are the packets that have been sent and are waiting for a response.
      */
+    //等待回复的包
     private final LinkedList<Packet> pendingQueue = new LinkedList<Packet>();
 
     /**
      * These are the packets that need to be sent.
      */
+    //发送线程应该就是从这里拿数据
     private final LinkedBlockingDeque<Packet> outgoingQueue = new LinkedBlockingDeque<Packet>();
 
+    //连接超时时间要除以可用的服务端数量是不是因为要保证所有服务端连一遍的总时间不能超过这个总超时时间
     private int connectTimeout;
 
     /**
@@ -250,10 +253,13 @@ public class ClientCnxn {
 
         ReplyHeader replyHeader;
 
+        //这个里面放的是真正的请求数据
         Record request;
 
+        //如果有回复数据的话 客户端这边就会直接给这个赋值
         Record response;
 
+        //这个是socket发送的数据 就是把请求的头和请求数据序列化的数据
         ByteBuffer bb;
 
         /** Client's view of the path (may differ due to chroot) **/
@@ -261,8 +267,10 @@ public class ClientCnxn {
         /** Servers's view of the path (may differ due to chroot) **/
         String serverPath;
 
+        //这个包是否已经处理完
         boolean finished;
 
+        //回调方法吧
         AsyncCallback cb;
 
         Object ctx;
@@ -435,6 +443,7 @@ public class ClientCnxn {
     }
 
     class EventThread extends ZooKeeperThread {
+        //socket里面读取出数据之后应该就加入了这个集合
         private final LinkedBlockingQueue<Object> waitingEvents =
             new LinkedBlockingQueue<Object>();
 
@@ -444,6 +453,7 @@ public class ClientCnxn {
          */
         private volatile KeeperState sessionState = KeeperState.Disconnected;
 
+        //这个线程是否被杀死
        private volatile boolean wasKilled = false;
        private volatile boolean isRunning = false;
 
@@ -458,6 +468,7 @@ public class ClientCnxn {
 
         private void queueEvent(WatchedEvent event,
                 Set<Watcher> materializedWatchers) {
+            //连续的none类型事件如果会话状态相同只加入一次
             if (event.getType() == EventType.None
                     && sessionState == event.getState()) {
                 return;
@@ -684,6 +695,7 @@ public class ClientCnxn {
     protected void finishPacket(Packet p) {
         int err = p.replyHeader.getErr();
         if (p.watchRegistration != null) {
+            //这是在重新注册监听器吗
             p.watchRegistration.register(err);
         }
         // Add all the removed watch events to the event queue, so that the
@@ -754,6 +766,8 @@ public class ClientCnxn {
         finishPacket(p);
     }
 
+    //这个应该是服务端的事务id吧
+
     private volatile long lastZxid;
 
     public long getLastZxid() {
@@ -802,9 +816,12 @@ public class ClientCnxn {
      * beats. It also spawns the ReadThread.
      */
     class SendThread extends ZooKeeperThread {
+        //最后一次发送ping的时间
         private long lastPingSentNs;
+        //连接服务端的socket对象
         private final ClientCnxnSocket clientCnxnSocket;
         private Random r = new Random();
+        //表示是否是第一次连接服务端
         private boolean isFirstConnect = true;
 
         void readResponse(ByteBuffer incomingBuffer) throws IOException {
@@ -839,16 +856,19 @@ public class ClientCnxn {
                 }
                 return;
             }
+            //触发的监听器
             if (replyHdr.getXid() == -1) {
                 // -1 means notification
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Got notification sessionid:0x"
                         + Long.toHexString(sessionId));
                 }
+                //这个是用于socket之前传输的类型
                 WatcherEvent event = new WatcherEvent();
                 event.deserialize(bbia, "response");
 
                 // convert from a server path to a client path
+                //把服务端的地址去掉这个客户端根目录
                 if (chrootPath != null) {
                     String serverPath = event.getPath();
                     if(serverPath.compareTo(chrootPath)==0)
@@ -862,6 +882,7 @@ public class ClientCnxn {
                     }
                 }
 
+                //这个是客户端处理事件的类型
                 WatchedEvent we = new WatchedEvent(event);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Got " + we + " for sessionid 0x"
@@ -954,11 +975,15 @@ public class ClientCnxn {
         /**
          * Setup session, previous watches, authentication.
          */
+        //首先发送客户端连接数据
+        //然后发送授权信息
+        //最后发送监听器消息
         void primeConnection() throws IOException {
             LOG.info("Socket connection established, initiating session, client: {}, server: {}",
                     clientCnxnSocket.getLocalSocketAddress(),
                     clientCnxnSocket.getRemoteSocketAddress());
             isFirstConnect = false;
+            //如果之前连的是一个只读的服务端,那么这个会话id是假的并没有什么用
             long sessId = (seenRwServerBefore) ? sessionId : 0;
             ConnectRequest conReq = new ConnectRequest(0, lastZxid,
                     sessionTimeout, sessId, sessionPasswd);
@@ -972,6 +997,7 @@ public class ClientCnxn {
                 List<String> childWatches = zooKeeper.getChildWatches();
                 if (!dataWatches.isEmpty()
                         || !existWatches.isEmpty() || !childWatches.isEmpty()) {
+                    //直接把客户端的路径转换成真实的服务端路径
                     Iterator<String> dataWatchesIter = prependChroot(dataWatches).iterator();
                     Iterator<String> existWatchesIter = prependChroot(existWatches).iterator();
                     Iterator<String> childWatchesIter = prependChroot(childWatches).iterator();
@@ -982,10 +1008,12 @@ public class ClientCnxn {
                         List<String> dataWatchesBatch = new ArrayList<String>();
                         List<String> existWatchesBatch = new ArrayList<String>();
                         List<String> childWatchesBatch = new ArrayList<String>();
+                        //这个长度表示的是路径字符串的长度和
                         int batchLength = 0;
 
                         // Note, we may exceed our max length by a bit when we add the last
                         // watch in the batch. This isn't ideal, but it makes the code simpler.
+                        //这样都还会超出1M的最大包数据限制的吗
                         while (batchLength < SET_WATCHES_MAX_LENGTH) {
                             final String watch;
                             if (dataWatchesIter.hasNext()) {
@@ -1019,8 +1047,10 @@ public class ClientCnxn {
                         OpCode.auth), null, new AuthPacket(0, id.scheme,
                         id.data), null, null));
             }
+            //发送客户端数据 为什么请求头都不设置了呢
             outgoingQueue.addFirst(new Packet(null, null, conReq,
                     null, null, readOnly));
+            //让select监听读写
             clientCnxnSocket.connectionPrimed();
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Session establishment request sent on "
@@ -1073,6 +1103,7 @@ public class ClientCnxn {
                     LOG.warn("Unexpected exception", e);
                 }
             }
+            //好像本来就是这个状态吧
             state = States.CONNECTING;
 
             String hostPort = addr.getHostString() + ":" + addr.getPort();
@@ -1225,6 +1256,7 @@ public class ClientCnxn {
                         to = Math.min(to, pingRwTimeout - idlePingRwServer);
                     }
 
+                    //开始读写
                     clientCnxnSocket.doTransport(to, pendingQueue, ClientCnxn.this);
                 } catch (Throwable e) {
                     if (closing) {
@@ -1494,6 +1526,7 @@ public class ClientCnxn {
     private int xid = 1;
 
     // @VisibleForTesting
+    //这个东西
     volatile States state = States.NOT_CONNECTED;
 
     /*

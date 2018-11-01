@@ -59,12 +59,18 @@ abstract class ClientCnxnSocket {
      * readLength() to receive the full message.
      */
     protected ByteBuffer incomingBuffer = lenBuffer;
+    //发送包的数量
     protected long sentCount = 0;
+    //收到了多少个包
     protected long recvCount = 0;
+    //最后一次收到数据的时间
     protected long lastHeard;
+    //最后发送数据的时间
     protected long lastSend;
     protected long now;
     protected ClientCnxn.SendThread sendThread;
+    //引用的是sendthread的集合
+    //需要发送的数据在里面
     protected LinkedBlockingDeque<Packet> outgoingQueue;
     protected ZKClientConfig clientConfig;
     //一个包的最大长度
