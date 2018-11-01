@@ -202,7 +202,7 @@ public class ClientCnxn {
      */
     volatile boolean seenRwServerBefore = false;
 
-
+    //安全连接的客户端吗
     public ZooKeeperSaslClient zooKeeperSaslClient;
 
     private final ZKClientConfig clientConfig;

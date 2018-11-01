@@ -212,6 +212,7 @@ public class ZooKeeper implements AutoCloseable {
      * @throws IOException in cases of network failure     
      */
     //看来这个是要客户端自己调用来实现负载均衡了
+    //todo
     public void updateServerList(String connectString) throws IOException {
         ConnectStringParser connectStringParser = new ConnectStringParser(connectString);
         Collection<InetSocketAddress> serverAddresses = connectStringParser.getServerAddresses();
@@ -231,14 +232,17 @@ public class ZooKeeper implements AutoCloseable {
         return cnxn.zooKeeperSaslClient;
     }
 
+    //监听器管理对象
     protected final ZKWatchManager watchManager;
 
+    //配置对象
     private final ZKClientConfig clientConfig;
 
     public ZKClientConfig getClientConfig() {
         return clientConfig;
     }
 
+    //所以监听数据的路径
     protected List<String> getDataWatches() {
         synchronized(watchManager.dataWatches) {
             List<String> rc = new ArrayList<String>(watchManager.dataWatches.keySet());
@@ -266,18 +270,22 @@ public class ZooKeeper implements AutoCloseable {
      * API.
      */
     static class ZKWatchManager implements ClientWatchManager {
+        //三种类型的监听器
         private final Map<String, Set<Watcher>> dataWatches =
             new HashMap<String, Set<Watcher>>();
         private final Map<String, Set<Watcher>> existWatches =
             new HashMap<String, Set<Watcher>>();
         private final Map<String, Set<Watcher>> childWatches =
             new HashMap<String, Set<Watcher>>();
+        //控制什么呢
+        //是否禁止自动重新设置监听器
         private boolean disableAutoWatchReset;
 
         ZKWatchManager(boolean disableAutoWatchReset) {
             this.disableAutoWatchReset = disableAutoWatchReset;
         }
 
+        //默认的监听器
         protected volatile Watcher defaultWatcher;
 
         final private void addTo(Set<Watcher> from, Set<Watcher> to) {
@@ -286,13 +294,17 @@ public class ZooKeeper implements AutoCloseable {
             }
         }
 
+        //rc表示服务端返回的状态
+        //local到底有什么用呢 目前看来只是用来判断rc是否作为参考
         public Map<EventType, Set<Watcher>> removeWatcher(String clientPath,
                 Watcher watcher, WatcherType watcherType, boolean local, int rc)
                 throws KeeperException {
             // Validate the provided znode path contains the given watcher of
             // watcherType
+            //如果没有的话会抛出异常
             containsWatcher(clientPath, watcher, watcherType);
 
+            //每个类型对应的监听器集合
             Map<EventType, Set<Watcher>> removedWatchers = new HashMap<EventType, Set<Watcher>>();
             HashSet<Watcher> childWatchersToRem = new HashSet<Watcher>();
             removedWatchers
@@ -376,8 +388,11 @@ public class ZooKeeper implements AutoCloseable {
          *            - type of the watcher
          * @throws NoWatcherException
         */
+        //如果watcher为空的话就是看指定路径上是否含有指定类型的监听器
+        //为什么要通过抛出异常来看有没有呢
         void containsWatcher(String path, Watcher watcher,
                 WatcherType watcherType) throws NoWatcherException{
+            //这个节点是否已经设置了指定类型的监听器
             boolean containsWatcher = false;
             switch (watcherType) {
             case Children: {
