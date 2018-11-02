@@ -609,12 +609,14 @@ public class ZooKeeper implements AutoCloseable {
         }
 
         @Override
+        //为什么这个节点存在就是加到数据监听器 节点不存在就是exit监听器
         protected Map<String, Set<Watcher>> getWatches(int rc) {
             return rc == 0 ?  watchManager.dataWatches : watchManager.existWatches;
         }
 
         @Override
         protected boolean shouldAddWatch(int rc) {
+            //节点不存在也需要加监听器 因为这个方法不需要保证节点预先存在
             return rc == 0 || rc == KeeperException.Code.NONODE.intValue();
         }
     }
@@ -1084,6 +1086,7 @@ public class ZooKeeper implements AutoCloseable {
      * @throws IllegalArgumentException if an invalid chroot path is specified
      * @throws IllegalArgumentException for an invalid list of ZooKeeper hosts
      */
+    //这个密码是不是服务端生成了之后传回来的
     public ZooKeeper(String connectString, int sessionTimeout, Watcher watcher,
             long sessionId, byte[] sessionPasswd)
         throws IOException
@@ -1273,6 +1276,7 @@ public class ZooKeeper implements AutoCloseable {
      *
      * @return current session id
      */
+    //可能发生同时读写 难道不报错吗
     public long getSessionId() {
         return cnxn.getSessionId();
     }
@@ -1460,12 +1464,17 @@ public class ZooKeeper implements AutoCloseable {
     {
         final String clientPath = path;
         PathUtils.validatePath(clientPath, createMode.isSequential());
+        //ttl传-1是为了防止其他类型检验会报错吗
+        //怎么感觉这里是必须能为ttl的
         EphemeralType.validateTTL(createMode, -1);
+        //还不能为空
         validateACL(acl);
 
         final String serverPath = prependChroot(clientPath);
 
         RequestHeader h = new RequestHeader();
+        //xid在发送的时候会被设置
+        //类型相当于只有两种吗 加上ttl有三种
         h.setType(createMode.isContainer() ? ZooDefs.OpCode.createContainer : ZooDefs.OpCode.create);
         CreateRequest request = new CreateRequest();
         CreateResponse response = new CreateResponse();
@@ -1556,6 +1565,7 @@ public class ZooKeeper implements AutoCloseable {
      * milliseconds and must be greater than 0 and less than or equal to
      * {@link EphemeralType#maxValue()} for {@link EphemeralType#TTL}.
      */
+    //这个stat应该是把服务端的值赋到里面去
     public String create(final String path, byte data[], List<ACL> acl,
             CreateMode createMode, Stat stat, long ttl)
             throws KeeperException, InterruptedException {
@@ -1567,6 +1577,8 @@ public class ZooKeeper implements AutoCloseable {
         final String serverPath = prependChroot(clientPath);
 
         RequestHeader h = new RequestHeader();
+        //就是设置一个type
+        //create2相关的地方
         setCreateHeader(createMode, h);
         Create2Response response = new Create2Response();
         Record record = makeCreateRecord(createMode, serverPath, data, acl, ttl);
@@ -2743,10 +2755,13 @@ public class ZooKeeper implements AutoCloseable {
      *
      * @since 3.5.0
      */
+    //local就是没有连通的情况下 也删掉本地的监听器
+    //服务端怎么知道删除哪个的 是不是有个计数器之类的技术
     public void removeWatches(String path, Watcher watcher,
             WatcherType watcherType, boolean local)
             throws InterruptedException, KeeperException {
         validateWatcher(watcher);
+        //为什么是check
         removeWatches(ZooDefs.OpCode.checkWatches, path, watcher,
                 watcherType, local);
     }

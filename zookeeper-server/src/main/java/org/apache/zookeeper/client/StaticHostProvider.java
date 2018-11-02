@@ -49,6 +49,7 @@ public final class StaticHostProvider implements HostProvider {
     private static final Logger LOG = LoggerFactory
             .getLogger(StaticHostProvider.class);
 
+    //没有修改之前的列表
     private List<InetSocketAddress> serverAddresses = new ArrayList<InetSocketAddress>(
             5);
 

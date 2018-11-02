@@ -40,6 +40,7 @@ public class ZooDefs {
 
         public final int delete = 2;
 
+        //查看节点是否存在
         public final int exists = 3;
 
         public final int getData = 4;
@@ -58,17 +59,22 @@ public class ZooDefs {
 
         public final int getChildren2 = 12;
 
+        //应该就是查看节点数据
         public final int check = 13;
 
+        //一次处理多个操作
         public final int multi = 14;
 
         //和create有什么区别
+        //这个就是需要把节点的stat传回来
         public final int create2 = 15;
 
         public final int reconfig = 16;
 
+        //这个是删除指定类型令面的指定监听器
         public final int checkWatches = 17;
 
+        //这个是删指定类型的全部监听器
         public final int removeWatches = 18;
 
         public final int createContainer = 19;

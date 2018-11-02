@@ -121,6 +121,7 @@ public class ClientCnxn {
         byte data[];
     }
 
+    //客户端自己调用了之后加进来数据
     private final CopyOnWriteArraySet<AuthData> authInfo = new CopyOnWriteArraySet<AuthData>();
 
     /**
@@ -200,6 +201,7 @@ public class ClientCnxn {
      * If this field is false (which implies we haven't seen r/w server before)
      * then non-zero sessionId is fake, otherwise it is valid.
      */
+    //之前连接的服务端是否是可读写的服务端
     volatile boolean seenRwServerBefore = false;
 
     //安全连接的客户端吗
@@ -210,6 +212,7 @@ public class ClientCnxn {
      * If any request's response in not received in configured requestTimeout
      * then it is assumed that the response packet is lost.
      */
+    //多久没收到请求的回复包算超时
     private long requestTimeout;
 
     public long getSessionId() {
@@ -273,6 +276,7 @@ public class ClientCnxn {
         //回调方法吧
         AsyncCallback cb;
 
+        //客户端传进来的随便一个上下文对象
         Object ctx;
 
         WatchRegistration watchRegistration;
@@ -695,7 +699,7 @@ public class ClientCnxn {
     protected void finishPacket(Packet p) {
         int err = p.replyHeader.getErr();
         if (p.watchRegistration != null) {
-            //这是在重新注册监听器吗
+            //客户端这边加监听器
             p.watchRegistration.register(err);
         }
         // Add all the removed watch events to the event queue, so that the
@@ -1553,10 +1557,12 @@ public class ClientCnxn {
         synchronized (packet) {
             if (requestTimeout > 0) {
                 // Wait for request completion with timeout
+                //这里会直接设置超时
                 waitForPacketFinish(r, packet);
             } else {
                 // Wait for request completion infinitely
                 while (!packet.finished) {
+                    //处理的时候应该有唤醒操作
                     packet.wait();
                 }
             }

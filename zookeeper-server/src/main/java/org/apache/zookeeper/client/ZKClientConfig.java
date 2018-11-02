@@ -31,7 +31,9 @@ import org.apache.zookeeper.server.quorum.QuorumPeerConfig.ConfigException;
  */
 @InterfaceAudience.Public
 public class ZKClientConfig extends ZKConfig {
+    //用户名的key
     public static final String ZK_SASL_CLIENT_USERNAME = "zookeeper.sasl.client.username";
+    //默认用户名
     public static final String ZK_SASL_CLIENT_USERNAME_DEFAULT = "zookeeper";
     @SuppressWarnings("deprecation")
     public static final String LOGIN_CONTEXT_NAME_KEY = ZooKeeperSaslClient.LOGIN_CONTEXT_NAME_KEY;;

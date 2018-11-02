@@ -34,6 +34,7 @@ public class WatchDeregistration {
     private final String clientPath;
     private final Watcher watcher;
     private final WatcherType watcherType;
+    //没有连通的情况下是否也删除本地监听器
     private final boolean local;
     private final ZKWatchManager zkManager;
 

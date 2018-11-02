@@ -44,6 +44,7 @@ import java.util.List;
  * @see ZooKeeper#setData(String, byte[], int)
  */
 public abstract class Op {
+    //操作类型吧
     private int type;
     private String path;
 
