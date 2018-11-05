@@ -832,7 +832,7 @@ public class DataTree {
 
     }
 
-    //这个代表了上次拍快照时的事务id吧
+    //目前看到是恢复快照之后立马会把这个值赋值成文件名里面的事务id
     public volatile long lastProcessedZxid = 0;
 
     public ProcessTxnResult processTxn(TxnHeader header, Record txn) {
@@ -1287,6 +1287,7 @@ public class DataTree {
         pTrie.clear();
         nodeDataSize.set(0);
         //path是完整的路径
+        //最开始写了一个空
         String path = ia.readString("path");
         while (!"/".equals(path)) {
             DataNode node = new DataNode();

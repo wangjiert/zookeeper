@@ -86,7 +86,7 @@ public class LearnerHandler extends ZooKeeperThread {
         return sid;
     }
 
-    //协议版本号
+    //协议版本号 应该是0x10000
     protected int version = 0x1;
 
     int getVersion() {
@@ -183,6 +183,7 @@ public class LearnerHandler extends ZooKeeperThread {
     /**
      * Last zxid sent to the learner as part of synchronization
      */
+    //发送给follower的最后一个事务id
     private long leaderLastZxid;
 
     LearnerHandler(Socket sock, BufferedInputStream bufferedInput,Leader leader) throws IOException {
@@ -228,6 +229,7 @@ public class LearnerHandler extends ZooKeeperThread {
      */
     final QuorumPacket proposalOfDeath = new QuorumPacket();
 
+    //这个peer的类型 是follower还是observer
     private LearnerType  learnerType = LearnerType.PARTICIPANT;
     public LearnerType getLearnerType() {
         return learnerType;
@@ -371,6 +373,7 @@ public class LearnerHandler extends ZooKeeperThread {
     public void run() {
         try {
             leader.addLearnerHandler(this);
+            //在干什么
             tickOfNextAckDeadline = leader.self.tick.get()
                     + leader.self.initLimit + leader.self.syncLimit;
 
@@ -386,6 +389,7 @@ public class LearnerHandler extends ZooKeeperThread {
                 return;
             }
 
+            //follower的info
             byte learnerInfoData[] = qp.getData();
             if (learnerInfoData != null) {
                 ByteBuffer bbsid = ByteBuffer.wrap(learnerInfoData);
@@ -397,7 +401,8 @@ public class LearnerHandler extends ZooKeeperThread {
                 }
                 if (learnerInfoData.length >= 20) {
                     long configVersion = bbsid.getLong();
-                    //看起来像是事务相关的
+                    //可以理解成配置的版本号
+                    //这个值是只有配置内容变了才会增加吗
                     if (configVersion > leader.self.getQuorumVerifier().getVersion()) {
                         throw new IOException("Follower is ahead of the leader (has a later activated configuration)");
                     }
@@ -418,14 +423,17 @@ public class LearnerHandler extends ZooKeeperThread {
                   learnerType = LearnerType.OBSERVER;
             }
 
+            //peer收到的epoch
             long lastAcceptedEpoch = ZxidUtils.getEpochFromZxid(qp.getZxid());
 
             long peerLastZxid;
             StateSummary ss = null;
+            //follower认为事务应该从哪开始
             long zxid = qp.getZxid();
-            //的到最终稳定的的epoch
+            //最终稳定的的epoch
             long newEpoch = leader.getEpochToPropose(this.getSid(), lastAcceptedEpoch);
             //新的事务id
+            //follower也传了一个 应该有可能不准 所以以这个为准吗
             long newLeaderZxid = ZxidUtils.makeZxid(newEpoch, 0);
 
             if (this.getVersion() < 0x10000) {
@@ -451,6 +459,7 @@ public class LearnerHandler extends ZooKeeperThread {
 				//这个值是follower传回来的自己的epoch
                 ByteBuffer bbepoch = ByteBuffer.wrap(ackEpochPacket.getData());
                 ss = new StateSummary(bbepoch.getInt(), ackEpochPacket.getZxid());
+                //卡线程 等待超过一半的follower连了之后在开始后面的操作
                 leader.waitForEpochAck(this.getSid(), ss);
             }
             //follower当前的事务id
@@ -731,6 +740,7 @@ public class LearnerHandler extends ZooKeeperThread {
                     Long.toHexString(lastProcessedZxid),
                     Long.toHexString(peerLastZxid));
 
+            //没有事物提交的缓存了
             if (db.getCommittedLog().isEmpty()) {
                 /*
                  * It is possible that committedLog is empty. In that case
@@ -765,12 +775,12 @@ public class LearnerHandler extends ZooKeeperThread {
             if (forceSnapSync) {
                 // Force leader to use snapshot to sync with follower
                 LOG.warn("Forcing snapshot sync - should not see this in production");
-            } else if (lastProcessedZxid == peerLastZxid) {
+            } else if (lastProcessedZxid == peerLastZxid) {//peerLastZxid是follower最后处理的事务id
                 //master和follower的事务相同 不应该什么都不做吗
                 // Follower is already sync with us, send empty diff
                 LOG.info("Sending DIFF zxid=0x" + Long.toHexString(peerLastZxid) +
                          " for peer sid: " +  getSid());
-                //怎么还是往集合里面加了一个包呢
+                //怎么还是往集合里面加了一个包呢 不是一样的吗
                 queueOpPacket(Leader.DIFF, peerLastZxid);
                 //不需要同步操作的意思吧
                 needOpPacket = false;

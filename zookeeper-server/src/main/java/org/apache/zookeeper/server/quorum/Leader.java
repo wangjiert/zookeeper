@@ -382,6 +382,7 @@ public class Leader {
      */
     final static int INFORMANDACTIVATE = 19;
 
+    //master发给follower的proposal
     final ConcurrentMap<Long, Proposal> outstandingProposals = new ConcurrentHashMap<Long, Proposal>();
 
     private final ConcurrentLinkedQueue<Proposal> toBeApplied = new ConcurrentLinkedQueue<Proposal>();
@@ -443,7 +444,9 @@ public class Leader {
 
     StateSummary leaderStateSummary;
 
+    //会在收到的epoch上面加1
     long epoch = -1;
+    //有一半的peer连接这个master之后设为false 表示不需要在等待了
     boolean waitingForNewEpoch = true;
 
     // when a reconfig occurs where the leader is removed or becomes an observer,
@@ -491,6 +494,7 @@ public class Leader {
             cnxAcceptor = new LearnerCnxAcceptor();
             cnxAcceptor.start();
 
+            //下一轮的选举轮数
             long epoch = getEpochToPropose(self.getId(), self.getAcceptedEpoch());
 
             zk.setZxid(ZxidUtils.makeZxid(epoch, 0));
@@ -1067,6 +1071,7 @@ public class Leader {
         sendObserverPacket(qp);
     }
 
+    //最后同步的事务id
     long lastProposed;
 
 
@@ -1276,10 +1281,11 @@ public class Leader {
                 epoch = lastAcceptedEpoch+1;
             }
             if (isParticipant(sid)) {
+                //用于判断是否有一般的peer连接了这个master
                 connectingFollowers.add(sid);
             }
             QuorumVerifier verifier = self.getQuorumVerifier();
-            //已经有一般的follower连接了master
+            //已经有一半的follower连接了master
             if (connectingFollowers.contains(self.getId()) &&
                                             verifier.containsQuorum(connectingFollowers)) {
                 waitingForNewEpoch = false;
@@ -1305,6 +1311,7 @@ public class Leader {
     }
 
     // VisibleForTesting
+    //follower的sid
     protected final Set<Long> electingFollowers = new HashSet<Long>();
     // VisibleForTesting
     protected boolean electionFinished = false;

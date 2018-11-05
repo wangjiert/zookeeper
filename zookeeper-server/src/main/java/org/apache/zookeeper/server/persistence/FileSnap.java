@@ -88,6 +88,7 @@ public class FileSnap implements SnapShot {
                  CheckedInputStream crcIn = new CheckedInputStream(snapIS, new Adler32())) {
                 InputArchive ia = BinaryInputArchive.getArchive(crcIn);
                 deserialize(dt, sessions, ia);
+                //md5值计算的时候是没有包含自己的
                 long checkSum = crcIn.getChecksum().getValue();
                 long val = ia.readLong("val");
                 if (val != checkSum) {
