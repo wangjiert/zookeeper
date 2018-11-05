@@ -555,6 +555,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
     /**
      * The current tick
      */
+    //看上去像是已经发送了多少次心跳
     protected AtomicInteger tick = new AtomicInteger();
 
     /**
@@ -1819,7 +1820,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         }
     }
 
-    //这个是master传过来的
+    //follower连接master的时候计算出来的epoch
     private long acceptedEpoch = -1;
     //逻辑时钟 用于判断多个投票是否在同一个周期
     private long currentEpoch = -1;

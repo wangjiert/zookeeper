@@ -67,7 +67,7 @@ import org.slf4j.LoggerFactory;
  *     Txn || Txn TxnList
  *
  * Txn:
- *     checksum Txnlen TxnHeader Record 0x42
+ *     checksum d TxnHeader Record 0x42
  *
  * checksum: 8bytes Adler32 is currently used
  *   calculated across payload -- Txnlen, TxnHeader, Record and 0x42
@@ -269,6 +269,7 @@ public class FileTxnLog implements TxnLog {
             }
             // the files
             // are sorted with zxid's
+            //本来就排过序 这个没什么必要
             if (fzxid > logZxid) {
                 logZxid = fzxid;
             }
@@ -299,6 +300,7 @@ public class FileTxnLog implements TxnLog {
         long zxid = maxLog;
         TxnIterator itr = null;
         try {
+            //为什么要新建一个对象 难道是里面有改动什么
             FileTxnLog txn = new FileTxnLog(logDir);
             itr = txn.read(maxLog);
             while (true) {

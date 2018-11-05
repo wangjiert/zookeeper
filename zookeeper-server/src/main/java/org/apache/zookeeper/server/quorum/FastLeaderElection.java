@@ -553,6 +553,7 @@ public class FastLeaderElection implements Election {
     long proposedLeader;
     long proposedZxid;
     //这个启动的时候没有被重置
+    //开始的时候是从currentEpoch复制过来的
     long proposedEpoch;
 
 
@@ -985,6 +986,7 @@ public class FastLeaderElection implements Election {
                         // If notification > current, replace and send messages out
                         if (n.electionEpoch > logicalclock.get()) {
                             logicalclock.set(n.electionEpoch);
+                            //为什么要清空呢
                             recvset.clear();
                             if(totalOrderPredicate(n.leader, n.zxid, n.peerEpoch,
                                     getInitId(), getInitLastLoggedZxid(), getPeerEpoch())) {

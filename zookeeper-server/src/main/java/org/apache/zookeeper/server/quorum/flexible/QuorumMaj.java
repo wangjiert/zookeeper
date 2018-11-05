@@ -39,6 +39,7 @@ public class QuorumMaj implements QuorumVerifier {
     private Map<Long, QuorumServer> votingMembers = new HashMap<Long, QuorumServer>();
     private Map<Long, QuorumServer> observingMembers = new HashMap<Long, QuorumServer>();
     //这个好像是事务id
+    //应该是这个配置至少在这个事务的时候是最新的
     private long version = 0;
     //需要满足的投票人数
     private int half;

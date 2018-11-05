@@ -127,6 +127,7 @@ public class PathTrie {
                 }
                 TrieNode childNode = children.get(childName);
                 // this is the only child node.
+                //并没有一直遍历下去
                 if (childNode.getChildren().length == 1) { 
                     childNode.setParent(null);
                     children.remove(childName);

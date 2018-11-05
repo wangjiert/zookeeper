@@ -36,12 +36,14 @@ public class Quotas {
      * the limit node that has the limit of
      * a subtree
      */
+    //这个节点对应一定要有一个下面的节点,但是这个节点记录了什么呢
     public static final String limitNode = "zookeeper_limits";
 
     /**
      * the stat node that monitors the limit of
      * a subtree.
      */
+    //这个节点记录了数据的总大小和数据的个数
     public static final String statNode = "zookeeper_stats";
 
     /**
