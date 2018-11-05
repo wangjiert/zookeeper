@@ -65,6 +65,7 @@ public class QuorumPeerConfig {
     public static final String nextDynamicConfigFileSuffix = ".dynamic.next";
 
     private static boolean standaloneEnabled = true;
+    //是否能通过集群内部的交流改变从配置文件读取的信息
     private static boolean reconfigEnabled = false;
 
     protected InetSocketAddress clientPortAddress;

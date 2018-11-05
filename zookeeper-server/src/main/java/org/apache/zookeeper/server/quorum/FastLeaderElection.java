@@ -230,6 +230,7 @@ public class FastLeaderElection implements Election {
                 this.manager = manager;
             }
 
+            //选举完了什么时候停呢
             public void run() {
 
                 Message response;
@@ -281,6 +282,7 @@ public class FastLeaderElection implements Election {
                             rpeerepoch = ZxidUtils.getEpochFromZxid(rzxid);
                         }
 
+                        //received quorumverifier
                         QuorumVerifier rqv = null;
 
                         // check if we have a version that includes config. If so extract config info from message.
@@ -510,7 +512,7 @@ public class FastLeaderElection implements Election {
          *
          * @param manager   Connection manager
          */
-        Messenger(QuorumCnxManager manager) {
+         Messenger(QuorumCnxManager manager) {
 
             this.ws = new WorkerSender(manager);
 

@@ -35,6 +35,7 @@ import org.apache.zookeeper.server.quorum.QuorumPeerConfig.ConfigException;
  */
 //法定人数验证器
 public class QuorumMaj implements QuorumVerifier {
+    //记录集群内每个节点的信息
     private Map<Long, QuorumServer> allMembers = new HashMap<Long, QuorumServer>();
     private Map<Long, QuorumServer> votingMembers = new HashMap<Long, QuorumServer>();
     private Map<Long, QuorumServer> observingMembers = new HashMap<Long, QuorumServer>();

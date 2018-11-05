@@ -127,12 +127,13 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
     private ZKDatabase zkDb;
 
     public static class QuorumServer {
-        //服务端地址
+        //集群内部交流地址
         public InetSocketAddress addr = null;
 
         //选举地址
         public InetSocketAddress electionAddr = null;
-        //客户端地址
+        //客户端交流用的地址
+        //集群内部传递数据的时候 传这个有什么用呢
         public InetSocketAddress clientAddr = null;
 
         //服务端编号
@@ -145,7 +146,8 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         public LearnerType type = LearnerType.PARTICIPANT;
 
         public boolean isClientAddrFromStatic = false;
-        
+
+        //三个地址的集合
         private List<InetSocketAddress> myAddrs;
 
         public QuorumServer(long id, InetSocketAddress addr,
@@ -214,6 +216,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             // LOG.warn("sid = " + sid + " addressStr = " + addressStr);
             this.id = sid;
             //可以有一个或者两个
+            //有两个的话，后面的就是客户端连接的地址
             String serverClientParts[] = addressStr.split(";");
             //可以有三个或者四个
             //如果是四个的话 最后一个就是类型
@@ -454,6 +457,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
     public QuorumVerifier quorumVerifier;
     
     //last proposed quorum verifier
+    //这个是集群内部通过选举的时候传递的配置信息解析出来的
     public QuorumVerifier lastSeenQuorumVerifier = null;
 
     // Lock object that guard access to quorumVerifier and lastSeenQuorumVerifier.
@@ -722,7 +726,9 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
 
     DatagramSocket udpSocket;
 
+    //集群内部交流的地址
     private InetSocketAddress myQuorumAddr;
+    //投票用的地址
     private InetSocketAddress myElectionAddr = null;
     private InetSocketAddress myClientAddr = null;
 
@@ -749,6 +755,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         if (qv != null) {
             QuorumServer qs = qv.getAllMembers().get(id);
             if (qs != null) {
+                //这个更新了有什么用吗 并没有更新到peer上面
                 qs.recreateSocketAddresses();
             }
         }

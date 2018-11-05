@@ -82,7 +82,7 @@ import static org.apache.zookeeper.common.NetUtils.formatInetAddr;
  * when consolidating peer communication. This is to be verified, though.
  *
  */
-
+//合并问题
 public class QuorumCnxManager {
     private static final Logger LOG = LoggerFactory.getLogger(QuorumCnxManager.class);
 
@@ -143,16 +143,19 @@ public class QuorumCnxManager {
     /*
      * Mapping from Peer to Thread number
      */
-    //key都是服务端编号
+    //针对每个sid的发送线程，每个线程肯定有自己的socket
     final ConcurrentHashMap<Long, SendWorker> senderWorkerMap;
     //发送线程会从里面拿数据 数据是由选举对象的写进程加进来的
+    //把发送的消息按sid进行分类，发送的时候就不需要进行筛选了
     final ConcurrentHashMap<Long, ArrayBlockingQueue<ByteBuffer>> queueSendMap;
+    //给每个sid发送的最后一个消息，以上所有的map也会包含自己的sid
     final ConcurrentHashMap<Long, ByteBuffer> lastMessageSent;
 
     /*
      * Reception queue
      */
     //从socket里面读的数据 会被选举对象的读进程不停的拿
+    //所有的数据都是发给这个peer的，所以就不需要用sid分了
     public final ArrayBlockingQueue<Message> recvQueue;
     /*
      * Object to synchronize access to recvQueue
@@ -533,12 +536,14 @@ public class QuorumCnxManager {
         }
     }
 
+    //有一个新连peer连接到本地
     private void handleConnection(Socket sock, DataInputStream din)
             throws IOException {
         Long sid = null, protocolVersion = null;
         InetSocketAddress electionAddr = null;
 
         try {
+            //下面的逻辑才是后来才加进来的吧 每个连接自己传自己的选举连接地址可以防止地址变之后导致无法正常工作
             protocolVersion = din.readLong();
             if (protocolVersion >= 0) { // this is a server id and not a protocol version
                 sid = protocolVersion;
@@ -554,6 +559,7 @@ public class QuorumCnxManager {
                 }
             }
 
+            //观察者的sid是被连接的peer分配的吗
             if (sid == QuorumPeer.OBSERVER_ID) {
                 /*
                  * Choose identifier at random. We need a value to identify
