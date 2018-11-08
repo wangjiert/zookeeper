@@ -383,8 +383,10 @@ public class Leader {
     final static int INFORMANDACTIVATE = 19;
 
     //master发给follower的proposal
+    //key是事务id
     final ConcurrentMap<Long, Proposal> outstandingProposals = new ConcurrentHashMap<Long, Proposal>();
 
+    //已经被大多数peer接受的提议
     private final ConcurrentLinkedQueue<Proposal> toBeApplied = new ConcurrentLinkedQueue<Proposal>();
 
     // VisibleForTesting
@@ -1102,6 +1104,7 @@ public class Leader {
          * Address the rollover issue. All lower 32bits set indicate a new leader
          * election. Force a re-election instead. See ZOOKEEPER-1277
          */
+        //要是选举代数也用完了呢
         if ((request.zxid & 0xffffffffL) == 0xffffffffL) {
             String msg =
                     "zxid lower 32 bits have rolled over, forcing re-election, and therefore new epoch start";

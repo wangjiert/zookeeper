@@ -54,6 +54,8 @@ public class ProposalRequestProcessor implements RequestProcessor {
         syncProcessor.start();
     }
 
+    //首先把请求给下一个处理
+    //然后把请求发给所有的follower,再写日志,最后确认自己的提议
     public void processRequest(Request request) throws RequestProcessorException {
         // LOG.warn("Ack>>> cxid = " + request.cxid + " type = " +
         // request.type + " id = " + request.sessionId);
@@ -71,6 +73,7 @@ public class ProposalRequestProcessor implements RequestProcessor {
         if (request instanceof LearnerSyncRequest){
             zks.getLeader().processSync((LearnerSyncRequest)request);
         } else {
+            //立马就反回了 不需要等待
             nextProcessor.processRequest(request);
             if (request.getHdr() != null) {
                 // We need to sync and get consensus on any transactions

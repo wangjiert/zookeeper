@@ -97,6 +97,7 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements
     }
 
     @Override
+    //就是写到日志里面
     public void run() {
         try {
             int logCount = 0;

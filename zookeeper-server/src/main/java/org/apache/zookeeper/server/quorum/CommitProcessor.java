@@ -163,6 +163,7 @@ public class CommitProcessor extends ZooKeeperCriticalThread implements
              * that will lead to a starvation of non-local committed requests.
              */
             int requestsToProcess = 0;
+            //是否在等待请求的提交
             boolean commitIsWaiting = false;
 			do {
                 /*

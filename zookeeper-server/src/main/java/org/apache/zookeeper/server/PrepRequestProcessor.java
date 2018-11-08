@@ -911,6 +911,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 request.setTxn(new ErrorTxn(Code.MARSHALLINGERROR.intValue()));
             }
         }
+        //给这个请求分配了事务id
         request.zxid = zks.getZxid();
         nextProcessor.processRequest(request);
     }

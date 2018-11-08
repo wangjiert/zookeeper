@@ -62,6 +62,7 @@ public class Request {
     public final long sessionId;
 
     //客户端传过来的
+    //主要功能应该是防止丢包 客户端会按发送的顺序校验收到包的这个字段是否相等
     public final int cxid;
 
     public final int type;
