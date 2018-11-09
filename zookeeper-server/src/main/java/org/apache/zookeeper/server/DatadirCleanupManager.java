@@ -50,8 +50,11 @@ public class DatadirCleanupManager {
 
     private final File dataLogDir;
 
+    //至少是3
     private final int snapRetainCount;
 
+    //好像可能为0
+    //小于等于0就是不要定时清理
     private final int purgeInterval;
 
     private Timer timer;
@@ -104,6 +107,7 @@ public class DatadirCleanupManager {
 
         timer = new Timer("PurgeTask", true);
         TimerTask task = new PurgeTask(dataLogDir, snapDir, snapRetainCount);
+        //这是多少小时清理一次呀
         timer.scheduleAtFixedRate(task, 0, TimeUnit.HOURS.toMillis(purgeInterval));
 
         purgeTaskStatus = PurgeTaskStatus.STARTED;

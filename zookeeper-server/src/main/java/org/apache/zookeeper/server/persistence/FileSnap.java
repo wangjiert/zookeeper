@@ -183,6 +183,7 @@ public class FileSnap implements SnapShot {
      * @throws IOException
      */
     public List<File> findNRecentSnapshots(int n) throws IOException {
+        //倒序的文件名
         List<File> files = Util.sortDataDir(snapDir.listFiles(), SNAPSHOT_FILE_PREFIX, false);
         int count = 0;
         List<File> list = new ArrayList<File>();

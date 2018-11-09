@@ -64,42 +64,73 @@ public class QuorumPeerConfig {
     private static final int UNSET_SERVERID = -1;
     public static final String nextDynamicConfigFileSuffix = ".dynamic.next";
 
+    //是否允许单例模式 什么鬼
     private static boolean standaloneEnabled = true;
     //是否能通过集群内部的交流改变从配置文件读取的信息
     private static boolean reconfigEnabled = false;
 
+    //等待客户端连接的地址
+    //这个有可能是null
+    //如果动态配置了会被强制覆盖
     protected InetSocketAddress clientPortAddress;
+    //也有可能是null
     protected InetSocketAddress secureClientPortAddress;
+    //有点像https相关的
     protected boolean sslQuorum = false;
+    //现在还不能用 到底是干什么的呢
     protected boolean shouldUsePortUnification = false;
+    //快照存放目录
     protected File dataDir;
+    //事务日志存放目录
     protected File dataLogDir;
+    //动态配置文件的路径
     protected String dynamicConfigFileStr = null;
+    //配置文件的路径
     protected String configFileStr = null;
+    //一次tick等于多少毫秒
     protected int tickTime = ZooKeeperServer.DEFAULT_TICK_TIME;
+    //一个peer最多允许的客户端连接数
     protected int maxClientCnxns = 60;
     /** defaults to -1 if not set explicitly */
+    //最小的超时时间
+    //真的是时间 并不是tick个数
     protected int minSessionTimeout = -1;
     /** defaults to -1 if not set explicitly */
+    //最大的超时时间
     protected int maxSessionTimeout = -1;
+    //像是统计相关的
     protected String metricsProviderClassName = NullMetricsProvider.class.getName();
+    //针对上面的对象的配置
     protected Properties metricsProviderConfiguration = new Properties();
+    //是否允许follower自己创建session吗
     protected boolean localSessionsEnabled = false;
+    //同上
     protected boolean localSessionsUpgradingEnabled = false;
 
+    //和master同步等待的tick个数
     protected int initLimit;
+    //follower等待master的包的tick个数
     protected int syncLimit;
+    //选举master的算法
     protected int electionAlg = 3;
     protected int electionPort = 2182;
+    //是不是监听0.0.0.0
     protected boolean quorumListenOnAllIPs = false;
 
+    //当前peer的sid
+    //可以不设置  会有检查
     protected long serverId = UNSET_SERVERID;
 
     protected QuorumVerifier quorumVerifier = null, lastSeenQuorumVerifier = null;
+    //每次清理文件时候,保留多少个快照文件
     protected int snapRetainCount = 3;
+    //清理的周期
     protected int purgeInterval = 0;
+    //针对观察者的 是否允许同步处理器
+    //如果不允许的话 针对master的inform观察者只会把数据写到内存 不会同步到日志文件以及拍快照
     protected boolean syncEnabled = true;
 
+    //peer的类型 是参与者还是观察者
     protected LearnerType peerType = LearnerType.PARTICIPANT;
 
     /**
@@ -107,10 +138,12 @@ public class QuorumPeerConfig {
      */
     protected boolean quorumServerRequireSasl = false;
     protected boolean quorumLearnerRequireSasl = false;
+    //授权认证相关
     protected boolean quorumEnableSasl = false;
     protected String quorumServicePrincipal = QuorumAuth.QUORUM_KERBEROS_SERVICE_PRINCIPAL_DEFAULT_VALUE;
     protected String quorumLearnerLoginContext = QuorumAuth.QUORUM_LEARNER_SASL_LOGIN_CONTEXT_DFAULT_VALUE;
     protected String quorumServerLoginContext = QuorumAuth.QUORUM_SERVER_SASL_LOGIN_CONTEXT_DFAULT_VALUE;
+    //处理集群内部的连接的线程数量吧
     protected int quorumCnxnThreadsSize;
 
     /**
@@ -134,10 +167,13 @@ public class QuorumPeerConfig {
      * @param path the patch of the configuration file
      * @throws ConfigException error processing configuration
      */
+    //文件不存在以及文件格式不对 都是抛出ConfigException
     public void parse(String path) throws ConfigException {
         LOG.info("Reading configuration from: " + path);
        
         try {
+            //如果文件不存在会抛出IllegalArgumentException
+            //如果文件是相对路径并且不是./开头就打印logger日志
             File configFile = (new VerifyingFileFactory.Builder(LOG)
                 .warnForRelativePath()
                 .failForNonExistingPath()
@@ -158,13 +194,15 @@ public class QuorumPeerConfig {
         } catch (IllegalArgumentException e) {
             throw new ConfigException("Error processing " + path, e);
         }   
-        
+
+        //前面的配置解析会解析这个field是否有配置
         if (dynamicConfigFileStr!=null) {
            try {           
                Properties dynamicCfg = new Properties();
                FileInputStream inConfig = new FileInputStream(dynamicConfigFileStr);
                try {
                    dynamicCfg.load(inConfig);
+                   //只能根据文件名决定version
                    if (dynamicCfg.getProperty("version") != null) {
                        throw new ConfigException("dynamic file shouldn't have version inside");
                    }
@@ -236,10 +274,14 @@ public class QuorumPeerConfig {
      * @throws IOException
      * @throws ConfigException
      */
+    //某些配置的值如果不合理直接抛出ConfigException
+    //所有不知道的key都加上zookeeper.之后放进环境变量
     public void parseProperties(Properties zkProp)
     throws IOException, ConfigException {
+        //用于监听客户端连接的端口
         int clientPort = 0;
         int secureClientPort = 0;
+        //这个地址是否带端口呢 不带
         String clientPortAddress = null;
         String secureClientPortAddress = null;
         VerifyingFileFactory vff = new VerifyingFileFactory.Builder(LOG).warnForRelativePath().build();
@@ -411,6 +453,7 @@ public class QuorumPeerConfig {
             LOG.info("secureClientPortAddress is {}", formatInetAddr(this.secureClientPortAddress));
         }
         if (this.secureClientPortAddress != null) {
+            //在环境变量里配authprovider的实现类名
             configureSSLAuth();
         }
 
@@ -634,6 +677,7 @@ public class QuorumPeerConfig {
     public static QuorumVerifier parseDynamicConfig(Properties dynamicConfigProp, int eAlg, boolean warnings,
 	   boolean configBackwardCompatibilityMode) throws IOException, ConfigException {
        boolean isHierarchical = false;
+       //单纯的校验配置 顺便看是不是聚类集群
         for (Entry<Object, Object> entry : dynamicConfigProp.entrySet()) {
             String key = entry.getKey().toString().trim();                    
             if (key.startsWith("group") || key.startsWith("weight")) {
@@ -649,10 +693,12 @@ public class QuorumPeerConfig {
         int numParticipators = qv.getVotingMembers().size();
         int numObservers = qv.getObservingMembers().size();
         if (numParticipators == 0) {
+            //单例模式是允许没有参与者的
             if (!standaloneEnabled) {
                 throw new IllegalArgumentException("standaloneEnabled = false then " +
                         "number of participants should be >0");
             }
+            //没有参与者就一定不能有观察者
             if (numObservers > 0) {
                 throw new IllegalArgumentException("Observers w/o participants is an invalid configuration");
             }
@@ -661,6 +707,7 @@ public class QuorumPeerConfig {
             // b/w compatibility reasons we need to keep this here. If standaloneEnabled
             // is true, the QuorumPeerMain script will create a standalone server instead
             // of a quorum configuration
+            //单例模式指定参与者为什么打印错误呢
             LOG.error("Invalid configuration, only one server specified (ignoring)");
             if (numObservers > 0) {
                 throw new IllegalArgumentException("Observers w/o quorum is an invalid configuration");
@@ -687,6 +734,7 @@ public class QuorumPeerConfig {
     private void setupMyId() throws IOException {
         File myIdFile = new File(dataDir, "myid");
         // standalone server doesn't need myid file.
+        //文件不存在会返回false
         if (!myIdFile.isFile()) {
             return;
         }
@@ -722,6 +770,7 @@ public class QuorumPeerConfig {
         }
         if (qs != null && qs.clientAddr != null) clientPortAddress = qs.clientAddr;
         if (qs != null && qs.clientAddr == null) {
+            //如果client的port和addr都没配置 就是null
             qs.clientAddr = clientPortAddress;
             qs.isClientAddrFromStatic = true;
         }
@@ -808,6 +857,7 @@ public class QuorumPeerConfig {
 
     public long getServerId() { return serverId; }
 
+    //只有一个参与者会强制转换成单例模式吗
     public boolean isDistributed() {
         return quorumVerifier!=null && (!standaloneEnabled || quorumVerifier.getVotingMembers().size() > 1);
     }

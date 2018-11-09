@@ -145,6 +145,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         
         public LearnerType type = LearnerType.PARTICIPANT;
 
+        //这个地址是通过静态配置文件配置的
         public boolean isClientAddrFromStatic = false;
 
         //三个地址的集合
@@ -291,6 +292,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         private void setMyAddrs() {
             this.myAddrs = new ArrayList<InetSocketAddress>();
             this.myAddrs.add(this.addr);
+            //这个可能为null
             this.myAddrs.add(this.clientAddr);
             this.myAddrs.add(this.electionAddr);
             this.myAddrs = excludedSpecialAddresses(this.myAddrs);
@@ -374,6 +376,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             InetAddress wcAddr = new InetSocketAddress(0).getAddress();
 
             for (InetSocketAddress addr : addrs) {
+                //clientAddr可能为空
                 if (addr == null) {
                     continue;
                 }

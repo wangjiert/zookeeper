@@ -580,6 +580,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
                 }
 
             } catch (InterruptedException e) {
+                //不处理的吗 不就没有处理超时的线程了
                   LOG.info("ConnnectionExpirerThread interrupted");
             }
         }
@@ -612,6 +613,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
     private final ConcurrentHashMap<InetAddress, Set<NIOServerCnxn>> ipMap =
         new ConcurrentHashMap<InetAddress, Set<NIOServerCnxn>>( );
 
+    //最大的客户端连接数
     protected int maxClientCnxns = 60;
 
     //应该是会话多久没收到心跳就算超时吧
@@ -645,6 +647,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
         if (secure) {
             throw new UnsupportedOperationException("SSL isn't supported in NIOServerCnxn");
         }
+        //还是不太懂
         configureSaslLogin();
 
         maxClientCnxns = maxcc;

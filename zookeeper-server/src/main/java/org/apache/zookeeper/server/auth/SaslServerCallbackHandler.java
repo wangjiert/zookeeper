@@ -43,7 +43,9 @@ public class SaslServerCallbackHandler implements CallbackHandler {
     private static final String SYSPROP_REMOVE_HOST = "zookeeper.kerberos.removeHostFromPrincipal";
     private static final String SYSPROP_REMOVE_REALM = "zookeeper.kerberos.removeRealmFromPrincipal";
 
+    //默认用户名
     private String userName;
+    //key是用户名 value是密码
     private final Map<String,String> credentials = new HashMap<String,String>();
 
     public SaslServerCallbackHandler(Configuration configuration)

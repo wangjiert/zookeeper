@@ -78,6 +78,7 @@ public class PurgeTxnLog {
 
         FileTxnSnapLog txnLog = new FileTxnSnapLog(dataDir, snapDir);
 
+        //倒叙的n个文件
         List<File> snaps = txnLog.findNRecentSnapshots(num);
         int numSnaps = snaps.size();
         if (numSnaps > 0) {
@@ -87,6 +88,7 @@ public class PurgeTxnLog {
 
     // VisibleForTesting
     static void purgeOlderSnapshots(FileTxnSnapLog txnLog, File snapShot) {
+        //删除的文件的事务ID应该小于这个
         final long leastZxidToBeRetain = Util.getZxidFromName(
                 snapShot.getName(), PREFIX_SNAPSHOT);
 
@@ -127,6 +129,7 @@ public class PurgeTxnLog {
                 if (retainedTxnLogs.contains(f)) {
                     return false;
                 }
+                //下面的逻辑是处理快照的  上面的是处理日志的
                 long fZxid = Util.getZxidFromName(f.getName(), prefix);
                 if (fZxid >= leastZxidToBeRetain) {
                     return false;

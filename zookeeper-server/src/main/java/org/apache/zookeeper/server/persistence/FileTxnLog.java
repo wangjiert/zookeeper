@@ -261,7 +261,7 @@ public class FileTxnLog implements TxnLog {
         long logZxid = 0;
         // Find the log file that starts before or at the same time as the
         // zxid of the snapshot
-        //找到接近快照事务或者等于的事务id
+        //找到接近或者等于快照的事务id
         for (File f : files) {
             long fzxid = Util.getZxidFromName(f.getName(), LOG_FILE_PREFIX);
             if (fzxid > snapshotZxid) {

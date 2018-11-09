@@ -69,10 +69,14 @@ import org.apache.zookeeper.server.quorum.QuorumPeerConfig.ConfigException;
 public class QuorumHierarchical implements QuorumVerifier {
     private static final Logger LOG = LoggerFactory.getLogger(QuorumHierarchical.class);
 
+    //key是sid,value是权重
     private HashMap<Long, Long> serverWeight = new HashMap<Long, Long>();
+    //key是sid,value是gid
     private HashMap<Long, Long> serverGroup = new HashMap<Long, Long>();
+    //key是gid,value是总权重
     private HashMap<Long, Long> groupWeight = new HashMap<Long, Long>();
-    
+
+    //有多少个组 权重为0的不会计算在内 但是并没有从集合里面删除对应的组
     private int numGroups = 0;
    
     private Map<Long, QuorumServer> allMembers = new HashMap<Long, QuorumServer>();

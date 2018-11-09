@@ -90,7 +90,7 @@ public class QuorumPeerMain {
             LOG.info(USAGE);
             System.err.println(USAGE);
             System.exit(ExitCode.INVALID_INVOCATION.getValue());
-        } catch (ConfigException e) {
+        } catch (ConfigException e) {//配置错误
             LOG.error("Invalid config, exiting abnormally", e);
             System.err.println("Invalid config, exiting abnormally");
             System.exit(ExitCode.INVALID_INVOCATION.getValue());
@@ -107,6 +107,7 @@ public class QuorumPeerMain {
             System.exit(ExitCode.UNEXPECTED_ERROR.getValue());
         }
         LOG.info("Exiting normally");
+        //系统正常退出
         System.exit(ExitCode.EXECUTION_FINISHED.getValue());
     }
 
@@ -146,6 +147,7 @@ public class QuorumPeerMain {
       LOG.info("Starting quorum peer");
       MetricsProvider metricsProvider;
       try {
+          //指标相关的吗
         metricsProvider = MetricsProviderBootstrap
                       .startMetricsProvider(config.getMetricsProviderClassName(),
                                             config.getMetricsProviderConfiguration());
