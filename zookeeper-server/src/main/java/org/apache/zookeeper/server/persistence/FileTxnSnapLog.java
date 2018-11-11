@@ -212,6 +212,7 @@ public class FileTxnSnapLog {
     public long restore(DataTree dt, Map<Long, Integer> sessions,
                         PlayBackListener listener) throws IOException {
         //返回快照文件名里面的事务id
+        //第一次启动返回-1
         long deserializeResult = snapLog.deserialize(dt, sessions);
         FileTxnLog txnLog = new FileTxnLog(dataDir);
         boolean trustEmptyDB;
@@ -241,6 +242,7 @@ public class FileTxnSnapLog {
             } else {
                 /* return a zxid of -1, since we are possibly missing data */
                 LOG.warn("Unexpected empty data tree, setting zxid to -1");
+                //-1好像会导致这个peer不能参与投票
                 dt.lastProcessedZxid = -1L;
                 return -1L;
             }

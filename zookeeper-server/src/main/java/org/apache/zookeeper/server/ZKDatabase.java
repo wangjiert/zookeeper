@@ -255,6 +255,7 @@ public class ZKDatabase {
     public long loadDataBase() throws IOException {
         long startTime = Time.currentElapsedTime();
         //返回恢复之后的最后一个事务
+        //有可能是0 -1
         long zxid = snapLog.restore(dataTree, sessionsWithTimeouts, commitProposalPlaybackListener);
         initialized = true;
         long loadTime = Time.currentElapsedTime() - startTime;

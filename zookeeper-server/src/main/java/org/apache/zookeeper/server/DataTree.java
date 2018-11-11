@@ -255,7 +255,7 @@ public class DataTree {
     //空和/对应的都是根节点
     //根节点下面有一个zookeeper节点
     //zookeeper节点下面有一个quota节点 显示子节点在树中对应节点本身和其所有子节点个数和数据长度
-    //zookeeper节点下面还有一个config节点  存的是法定人数验证器的数据
+    //zookeeper节点下面还有一个config节点  存的是法定人数验证器的数据 事务id存的是配置的版本号
     public DataTree() {
         /* Rather than fight it, let root have an alias */
 
