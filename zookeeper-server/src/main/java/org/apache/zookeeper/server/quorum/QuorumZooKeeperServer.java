@@ -40,6 +40,7 @@ import org.apache.zookeeper.server.persistence.FileTxnSnapLog;
 public abstract class QuorumZooKeeperServer extends ZooKeeperServer {
 
     public final QuorumPeer self;
+    //引用的就是父类的sessiontracker
     protected UpgradeableSessionTracker upgradeableSessionTracker;
 
     protected QuorumZooKeeperServer(FileTxnSnapLog logFactory, int tickTime,

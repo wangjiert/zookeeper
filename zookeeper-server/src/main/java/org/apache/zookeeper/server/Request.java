@@ -42,7 +42,7 @@ public class Request {
         this.sessionId = sessionId;
         this.cxid = xid;
         this.type = type;
-        //这个好像是超时
+        //创建会话的时候 这个是超时时间
         this.request = bb;
         this.authInfo = authInfo;
     }

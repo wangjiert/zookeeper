@@ -49,6 +49,7 @@ public class SessionTrackerImpl extends ZooKeeperCriticalThread implements
     protected final ConcurrentHashMap<Long, SessionImpl> sessionsById =
         new ConcurrentHashMap<Long, SessionImpl>();
 
+    //为什么它有这个东西  qurompeer的超时线程里面也有这个
     private final ExpiryQueue<SessionImpl> sessionExpiryQueue;
 
     //引用的是zookeeper server的集合对象

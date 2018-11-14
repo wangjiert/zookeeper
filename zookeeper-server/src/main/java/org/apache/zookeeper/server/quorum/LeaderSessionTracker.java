@@ -37,12 +37,14 @@ import org.slf4j.LoggerFactory;
 public class LeaderSessionTracker extends UpgradeableSessionTracker {
     private static final Logger LOG = LoggerFactory.getLogger(LeaderSessionTracker.class);
 
+    //构造的时候传进来的
     private final boolean localSessionsEnabled;
     private final SessionTrackerImpl globalSessionTracker;
 
     /**
      * Server id of the leader
      */
+    //构造的时候传进来的
     private final long serverId;
 
     public LeaderSessionTracker(SessionExpirer expirer,

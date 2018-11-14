@@ -93,6 +93,7 @@ public class Leader {
 
     private final LearnerSnapshotThrottler learnerSnapshotThrottler;
 
+    //创建leader的时候创建的
     final LeaderZooKeeperServer zk;
 
     final QuorumPeer self;

@@ -1077,6 +1077,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
         //应该是新的连接没有会话id，重连的连接就有会话id
         long sessionId = connReq.getSessionId();
         if (sessionId == 0) {
+            //隨便都能新建会话id吗 难道说会话id这个东西其实是对每个peer独立的
             long id = createSession(cnxn, passwd, sessionTimeout);
             LOG.debug("Client attempting to establish new session:" +
                             " session = 0x{}, zxid = 0x{}, timeout = {}, address = {}",
