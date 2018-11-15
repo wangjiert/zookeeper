@@ -56,6 +56,7 @@ public class FileTxnSnapLog {
     final File snapDir;
     TxnLog txnLog;
     SnapShot snapLog;
+    //在恢复阶段控制database的lasttransid
     private final boolean autoCreateDB;
     public final static int VERSION = 2;
     public final static String version = "version-";

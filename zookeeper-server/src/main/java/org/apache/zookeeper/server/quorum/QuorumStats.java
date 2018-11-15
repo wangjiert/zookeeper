@@ -19,6 +19,7 @@
 package org.apache.zookeeper.server.quorum;
 
 public class QuorumStats {
+    //就是quorumpeer
     private final Provider provider;
     
     public interface Provider {

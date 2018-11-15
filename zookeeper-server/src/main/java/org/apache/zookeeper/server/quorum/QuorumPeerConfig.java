@@ -70,8 +70,9 @@ public class QuorumPeerConfig {
     private static boolean reconfigEnabled = false;
 
     //等待客户端连接的地址
-    //这个有可能是null
+    //如果没有配置client连接的端口和地址这个属性就为null
     //如果动态配置了会被强制覆盖
+    //为空会怎样呢 只是会随意监听一个端口而已
     protected InetSocketAddress clientPortAddress;
     //也有可能是null
     protected InetSocketAddress secureClientPortAddress;
@@ -118,7 +119,8 @@ public class QuorumPeerConfig {
     protected boolean quorumListenOnAllIPs = false;
 
     //当前peer的sid
-    //可以不设置  会有检查
+    //可以不设置
+    //如果是分布式的并且sid为空会抛出异常
     protected long serverId = UNSET_SERVERID;
 
     protected QuorumVerifier quorumVerifier = null, lastSeenQuorumVerifier = null;
@@ -678,6 +680,8 @@ public class QuorumPeerConfig {
 	   boolean configBackwardCompatibilityMode) throws IOException, ConfigException {
        boolean isHierarchical = false;
        //单纯的校验配置 顺便看是不是聚类集群
+        // dynamic file的话 version是从文件名里获取的值
+        //version不存在会发生什么呢
         for (Entry<Object, Object> entry : dynamicConfigProp.entrySet()) {
             String key = entry.getKey().toString().trim();                    
             if (key.startsWith("group") || key.startsWith("weight")) {
