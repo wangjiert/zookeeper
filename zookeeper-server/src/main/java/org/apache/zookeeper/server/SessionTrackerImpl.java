@@ -46,6 +46,7 @@ public class SessionTrackerImpl extends ZooKeeperCriticalThread implements
         SessionTracker {
     private static final Logger LOG = LoggerFactory.getLogger(SessionTrackerImpl.class);
 
+    //目前看来这个里面的对象根本就不会被更新 是因为会话超时时间不会变吗
     protected final ConcurrentHashMap<Long, SessionImpl> sessionsById =
         new ConcurrentHashMap<Long, SessionImpl>();
 
@@ -54,6 +55,7 @@ public class SessionTrackerImpl extends ZooKeeperCriticalThread implements
 
     //引用的是zookeeper server的集合对象
     private final ConcurrentMap<Long, Integer> sessionsWithTimeout;
+    //并不是从0开始的 所以每个peer都会自己负责自己的client的会话id分配
     private final AtomicLong nextSessionId = new AtomicLong();
 
     public static class SessionImpl implements Session {
@@ -87,6 +89,7 @@ public class SessionTrackerImpl extends ZooKeeperCriticalThread implements
         //最高的8位是服务端id
         //接下来四十位是时间
         //接下来十六位是0
+        //>>>是无符号位移
         nextSid = (Time.currentElapsedTime() << 24) >>> 8;
         nextSid =  nextSid | (id <<56);
         if (nextSid == EphemeralType.CONTAINER_EPHEMERAL_OWNER) {
@@ -108,6 +111,7 @@ public class SessionTrackerImpl extends ZooKeeperCriticalThread implements
         this.sessionsWithTimeout = sessionsWithTimeout;
         this.nextSessionId.set(initializeNextSession(serverId));
         for (Entry<Long, Integer> e : sessionsWithTimeout.entrySet()) {
+            //向sessionById集合添加对象并更新会话超时时间
             trackSession(e.getKey(), e.getValue());
         }
 
@@ -186,6 +190,7 @@ public class SessionTrackerImpl extends ZooKeeperCriticalThread implements
         return true;
     }
 
+    //更新会话的超时时间
     private void updateSessionExpiry(SessionImpl s, int timeout) {
         logTraceTouchSession(s.sessionId, timeout, "");
         sessionExpiryQueue.update(s, timeout);
@@ -214,6 +219,7 @@ public class SessionTrackerImpl extends ZooKeeperCriticalThread implements
         return sessionsWithTimeout.get(sessionId);
     }
 
+    //就是从sessionById里面删除对象
     synchronized public void setSessionClosing(long sessionId) {
         if (LOG.isTraceEnabled()) {
             LOG.trace("Session closing: 0x" + Long.toHexString(sessionId));
@@ -256,6 +262,7 @@ public class SessionTrackerImpl extends ZooKeeperCriticalThread implements
     }
 
     @Override
+    //如果sessionsById没有这个key的话就添加 并更新会话的超时时间
     public synchronized boolean trackSession(long id, int sessionTimeout) {
         boolean added = false;
 
@@ -283,6 +290,7 @@ public class SessionTrackerImpl extends ZooKeeperCriticalThread implements
                     + Long.toHexString(id) + " " + sessionTimeout);
         }
 
+        //用不更新sessionById是不是也因为这里用的时候需要这个对象地址是个定值
         updateSessionExpiry(session, sessionTimeout);
         return added;
     }
@@ -335,6 +343,8 @@ public class SessionTrackerImpl extends ZooKeeperCriticalThread implements
         }
     }
 
+    //说明这个对象肯定不会处理localsession
+    //看不懂啊 localsession的tracker也是用的这个方法
     public long getLocalSessionCount() {
         return 0;
     }

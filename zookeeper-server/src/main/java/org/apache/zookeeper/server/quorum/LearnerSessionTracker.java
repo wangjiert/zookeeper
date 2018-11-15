@@ -60,6 +60,9 @@ public class LearnerSessionTracker extends UpgradeableSessionTracker {
 
     private final ConcurrentMap<Long, Integer> globalSessionsWithTimeouts;
 
+    //没有一个叫globalSessionTracker的对象
+    //master是管理全局session超时 以及自己的localsession的超时
+    //而follower只管理自己的localsession超时
     public LearnerSessionTracker(SessionExpirer expirer,
             ConcurrentMap<Long, Integer> sessionsWithTimeouts,
             int tickTime, long id, boolean localSessionsEnabled,

@@ -35,6 +35,7 @@ import org.apache.zookeeper.common.Time;
  * to expire connections.
  */
 public class ExpiryQueue<E> {
+    //记录的是什么时间这个会话就算超时了
     private final ConcurrentHashMap<E, Long> elemMap =
         new ConcurrentHashMap<E, Long>();
     /**
@@ -42,6 +43,7 @@ public class ExpiryQueue<E> {
      * so the expirationInterval should not be too small compared to the
      * max timeout that this expiry queue needs to maintain.
      */
+    //记录的是某个时间哪些会话是要超时的
     private final ConcurrentHashMap<Long, Set<E>> expiryMap =
         new ConcurrentHashMap<Long, Set<E>>();
 

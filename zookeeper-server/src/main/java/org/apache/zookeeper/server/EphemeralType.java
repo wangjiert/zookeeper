@@ -197,6 +197,8 @@ public enum EphemeralType {
         // TODO: however, for now, it would be too disruptive
 
         if (extendedEphemeralTypesEnabled()) {
+            //是不是太少了 才254个会话而已 zookeeper集群应该不大吧
+            //本来就只分配了一个字节给peer id
             if (serverId > EphemeralType.MAX_EXTENDED_SERVER_ID) {
                 throw new RuntimeException("extendedTypesEnabled is true but Server ID is too large. Cannot be larger than " + EphemeralType.MAX_EXTENDED_SERVER_ID);
             }

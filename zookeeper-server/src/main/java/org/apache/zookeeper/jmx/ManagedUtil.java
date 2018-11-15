@@ -33,6 +33,8 @@ import org.slf4j.LoggerFactory;
 public class ManagedUtil {
     private static final Logger LOG = LoggerFactory.getLogger(ManagedUtil.class);
 
+    //就是看当前加载路径里面是否有org.apache.log4j.spi.LoggerRepository这个类
+    //如果存在的话就看环境变量的配置
     private static final boolean isLog4jJmxEnabled() {
         boolean enabled = false;
 

@@ -39,6 +39,7 @@ public class LeaderSessionTracker extends UpgradeableSessionTracker {
 
     //构造的时候传进来的
     private final boolean localSessionsEnabled;
+    //这个线程里面出错之后 会改变zookeeper server的状态为错误状态
     private final SessionTrackerImpl globalSessionTracker;
 
     /**
