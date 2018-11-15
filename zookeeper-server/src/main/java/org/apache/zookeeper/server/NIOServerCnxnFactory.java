@@ -616,7 +616,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
     //最大的客户端连接数
     protected int maxClientCnxns = 60;
 
-    //应该是会话多久没收到心跳就算超时吧
+    //什么意思
     int sessionlessCnxnTimeout;
     private ExpiryQueue<NIOServerCnxn> cnxnExpiryQueue;
 
@@ -689,6 +689,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
         this.ss = ServerSocketChannel.open();
         ss.socket().setReuseAddress(true);
         LOG.info("binding to port " + addr);
+        //bind之后就会开始监听端口
         ss.socket().bind(addr);
         ss.configureBlocking(false);
         acceptThread = new AcceptThread(ss, addr, selectorThreads);

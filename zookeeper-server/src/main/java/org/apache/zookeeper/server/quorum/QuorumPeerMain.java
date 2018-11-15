@@ -157,6 +157,7 @@ public class QuorumPeerMain {
       }
       try {
 
+          //两个同时为空怎么办
           ServerCnxnFactory cnxnFactory = null;
           ServerCnxnFactory secureCnxnFactory = null;
 

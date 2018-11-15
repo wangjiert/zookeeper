@@ -82,7 +82,8 @@ public class QuorumHierarchical implements QuorumVerifier {
     private Map<Long, QuorumServer> allMembers = new HashMap<Long, QuorumServer>();
     private Map<Long, QuorumServer> participatingMembers = new HashMap<Long, QuorumServer>();
     private Map<Long, QuorumServer> observingMembers = new HashMap<Long, QuorumServer>();
-    
+
+    //有可能不会变
     private long version = 0;
     
     public int hashCode() {
