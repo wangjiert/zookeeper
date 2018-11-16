@@ -78,6 +78,7 @@ public class NIOServerCnxn extends ServerCnxn {
 
     private int sessionTimeout;
 
+    //最开始的时候是null
     private final ZooKeeperServer zkServer;
 
     /**
@@ -91,6 +92,7 @@ public class NIOServerCnxn extends ServerCnxn {
      */
     private long sessionId;
 
+    //开始的时候是1
     private final int outstandingLimit;
 
     public NIOServerCnxn(ZooKeeperServer zk, SocketChannel sock,
@@ -311,6 +313,7 @@ public class NIOServerCnxn extends ServerCnxn {
     /**
      * Handles read/write IO on connection.
      */
+    //为什么要传参数呢 k明显就是sk吧
     void doIO(SelectionKey k) throws InterruptedException {
         try {
             if (isSocketOpen() == false) {
@@ -413,6 +416,7 @@ public class NIOServerCnxn extends ServerCnxn {
     }
 
     //应该是表示这个连接是否还能继续读取数据
+    //在什么时候这个变量会变
     private final AtomicBoolean throttled = new AtomicBoolean(false);
 
     // Throttle acceptance of new requests. If this entailed a state change,
@@ -552,6 +556,8 @@ public class NIOServerCnxn extends ServerCnxn {
     private boolean readLength(SelectionKey k) throws IOException {
         // Read the length, now get the buffer
         int len = lenBuffer.getInt();
+        //只有没有初始化才会读取四字节吗,但是还是有创建连接的可能 数据要是刚好和死字节命令相同呢
+        //肯定不会 这些key都很大
         if (!initialized && checkFourLetterWord(sk, len)) {
             return false;
         }

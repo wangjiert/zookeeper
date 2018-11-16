@@ -125,6 +125,7 @@ public class QuorumCnxManager {
      * Local IP address
      */
     final long mySid;
+    //多久收不到包的时间
     final int socketTimeout;
     final Map<Long, QuorumPeer.QuorumServer> view;
     final boolean listenOnAllIPs;

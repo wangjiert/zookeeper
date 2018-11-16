@@ -167,6 +167,7 @@ public abstract class ServerCnxnFactory {
 
     // Connection set is relied on heavily by four letter commands
     // Construct a ConcurrentHashSet using a ConcurrentHashMap
+    //所有的客户端连接
     protected final Set<ServerCnxn> cnxns = Collections.newSetFromMap(
         new ConcurrentHashMap<ServerCnxn, Boolean>());
     public void unregisterConnection(ServerCnxn serverCnxn) {

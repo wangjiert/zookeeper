@@ -552,6 +552,7 @@ public class FastLeaderElection implements Election {
     AtomicLong logicalclock = new AtomicLong(); /* Election instance */
     //投票的三个重要值 每次收到新的投票的时候都会更新
     //最开始的时候被重置为-1
+    //参与者的这个字段会设为负数
     long proposedLeader;
     long proposedZxid;
     //这个启动的时候没有被重置

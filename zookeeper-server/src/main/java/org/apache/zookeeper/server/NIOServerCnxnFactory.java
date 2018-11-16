@@ -341,6 +341,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
      */
     class SelectorThread extends AbstractSelectThread {
         private final int id;
+        //AcceptThread加进来的
         private final Queue<SocketChannel> acceptedQueue;
         private final Queue<SelectionKey> updateQueue;
 
@@ -610,6 +611,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
         new ConcurrentHashMap<Long, NIOServerCnxn>();
     // ipMap is used to limit connections per IP
     //每个ip上所有的连接
+    //key是client的地址
     private final ConcurrentHashMap<InetAddress, Set<NIOServerCnxn>> ipMap =
         new ConcurrentHashMap<InetAddress, Set<NIOServerCnxn>>( );
 
@@ -636,6 +638,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
     public NIOServerCnxnFactory() {
     }
 
+    //start的时候会变为false
     private volatile boolean stopped = true;
     private ConnectionExpirerThread expirerThread;
     private AcceptThread acceptThread;
@@ -747,12 +750,14 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
             workerPool = new WorkerService(
                 "NIOWorker", numWorkerThreads, false);
         }
+        //靠外面的stopped变量决定是否停止
         for(SelectorThread thread : selectorThreads) {
             if (thread.getState() == Thread.State.NEW) {
                 thread.start();
             }
         }
         // ensure thread is started once and only once
+        //这里就已经可以开始处理客户端请求了 不过要是zookeeper server没初始化会抛出异常
         if (acceptThread.getState() == Thread.State.NEW) {
             //单独的线程监听socket连接
             acceptThread.start();
@@ -852,6 +857,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
 
     protected NIOServerCnxn createConnection(SocketChannel sock,
             SelectionKey sk, SelectorThread selectorThread) throws IOException {
+        //zkServer在这里还没有被初始化吧
         return new NIOServerCnxn(zkServer, sock, sk, this, selectorThread);
     }
 

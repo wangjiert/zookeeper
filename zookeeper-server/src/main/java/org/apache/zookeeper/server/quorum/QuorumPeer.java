@@ -551,6 +551,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
      * The number of ticks that can pass between sending a request and getting
      * an acknowledgment
      */
+    //等待一个包的时间
     protected int syncLimit;
     
     /**
@@ -907,7 +908,9 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             zkDb.loadDataBase();
 
             // load the epochs
+            //之前处理的最后一个事务
             long lastProcessedZxid = zkDb.getDataTree().lastProcessedZxid;
+            //投票的代数
             long epochOfZxid = ZxidUtils.getEpochFromZxid(lastProcessedZxid);
             try {
                 currentEpoch = readLongFromFile(CURRENT_EPOCH_FILENAME);
