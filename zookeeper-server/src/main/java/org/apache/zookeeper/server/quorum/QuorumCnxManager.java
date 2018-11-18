@@ -131,6 +131,7 @@ public class QuorumCnxManager {
     final boolean listenOnAllIPs;
     //线程池有用过吗
     private ThreadPoolExecutor connectionExecutor;
+    //已经连接的sid
     private final Set<Long> inprogressConnections = Collections
             .synchronizedSet(new HashSet<Long>());
     private QuorumAuthServer authServer;
@@ -627,6 +628,7 @@ public class QuorumCnxManager {
      * Processes invoke this message to queue a message to send. Currently,
      * only leader election uses it.
      */
+    //b里面多加了一个表示发送消息的版本
     public void toSend(Long sid, ByteBuffer b) {
         /*
          * If sending message to myself, then simply enqueue it (loopback).
@@ -1311,6 +1313,7 @@ public class QuorumCnxManager {
         synchronized(recvQLock) {
             if (recvQueue.remainingCapacity() == 0) {
                 try {
+                    //好像没毛病，反正前面比后面的小一轮
                     recvQueue.remove();
                 } catch (NoSuchElementException ne) {
                     // element could be removed by poll()

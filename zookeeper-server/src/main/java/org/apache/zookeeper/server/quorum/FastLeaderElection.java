@@ -86,6 +86,7 @@ public class FastLeaderElection implements Election {
 
     QuorumCnxManager manager;
 
+    //master才有值
     private SyncedLearnerTracker leadingVoteSet;
 
     /**
@@ -101,6 +102,7 @@ public class FastLeaderElection implements Election {
          */
 
         public final static int CURRENTVERSION = 0x2;
+        //就是上面的值
         int version;
 
         /*
@@ -460,6 +462,7 @@ public class FastLeaderElection implements Election {
          */
 
         class WorkerSender extends ZooKeeperThread {
+            //这个是什么时候设为true呢
             volatile boolean stop;
             QuorumCnxManager manager;
 
