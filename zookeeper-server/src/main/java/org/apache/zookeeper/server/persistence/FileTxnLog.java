@@ -131,6 +131,7 @@ public class FileTxnLog implements TxnLog {
     File logFileWrite = null;
     private FilePadding filePadding = new FilePadding();
 
+    //引用的zookeeper server的对象
     private ServerStats serverStats;
 
     private volatile long syncElapsedMS = -1L;

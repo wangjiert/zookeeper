@@ -109,6 +109,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
     private final AtomicLong hzxid = new AtomicLong(0);
     public final static Exception ok = new Exception("No prob");
     protected RequestProcessor firstProcessor;
+    //会被listener设置为错误
     protected volatile State state = State.INITIAL;
 
     protected enum State {

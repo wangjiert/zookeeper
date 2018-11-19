@@ -91,6 +91,7 @@ public class Leader {
         LOG.info(MAX_CONCURRENT_SNAPSHOT_TIMEOUT + " = " + maxConcurrentSnapshotTimeout);
     }
 
+    //有什么用呢
     private final LearnerSnapshotThrottler learnerSnapshotThrottler;
 
     //创建leader的时候创建的
@@ -487,6 +488,7 @@ public class Leader {
         zk.registerJMX(new LeaderBean(this, zk), self.jmxLocalPeerBean);
 
         try {
+            //什么时候变呢
             self.tick.set(0);
             zk.loadData();
 
@@ -498,6 +500,8 @@ public class Leader {
             cnxAcceptor.start();
 
             //下一轮的选举轮数
+            //这个方法应该和上面的线程有关联吧
+            //最开始是在等待超过一般的follower连接自己好确定新的事务起始值
             long epoch = getEpochToPropose(self.getId(), self.getAcceptedEpoch());
 
             zk.setZxid(ZxidUtils.makeZxid(epoch, 0));
@@ -506,6 +510,7 @@ public class Leader {
                 lastProposed = zk.getZxid();
             }
 
+            //走到这一步 说明已经有一半的follower连接了这个leader
             newLeaderProposal.packet = new QuorumPacket(NEWLEADER, zk.getZxid(),
                    null, null);
 
@@ -555,10 +560,12 @@ public class Leader {
             // us. We do this by waiting for the NEWLEADER packet to get
             // acknowledged
 
+            //等待超过一般的follower确认收到的leaderInfo
              waitForEpochAck(self.getId(), leaderStateSummary);
              self.setCurrentEpoch(epoch);
 
              try {
+                 //等待newLeaderInfo的确认
                  waitForNewLeaderAck(self.getId(), zk.getZxid());
              } catch (InterruptedException e) {
                  shutdown("Waiting for a quorum of followers, only synced with sids: [ "
@@ -1219,6 +1226,7 @@ public class Leader {
         return lastProposed;
     }
     // VisibleForTesting
+    //key是sid
     protected final Set<Long> connectingFollowers = new HashSet<Long>();
 
     private volatile boolean quitWaitForEpoch = false;
@@ -1278,12 +1286,15 @@ public class Leader {
     //这个方法会一直等待 直到有一半的follower加进来在返回
     public long getEpochToPropose(long sid, long lastAcceptedEpoch) throws InterruptedException, IOException {
         synchronized(connectingFollowers) {
+            //选举代数稳定了才会设为false
             if (!waitingForNewEpoch) {
                 return epoch;
             }
+            //epoch从-1开始
             if (lastAcceptedEpoch >= epoch) {
                 epoch = lastAcceptedEpoch+1;
             }
+            //如果这个peeer是参与者  这个peer不是leader吗 难道还不是参与者啊
             if (isParticipant(sid)) {
                 //用于判断是否有一般的peer连接了这个master
                 connectingFollowers.add(sid);

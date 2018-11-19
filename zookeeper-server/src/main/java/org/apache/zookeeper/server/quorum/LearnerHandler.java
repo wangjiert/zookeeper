@@ -172,6 +172,7 @@ public class LearnerHandler extends ZooKeeperThread {
      * For testing purpose, force leader to use snapshot to sync with followers
      */
     public static final String FORCE_SNAP_SYNC = "zookeeper.forceSnapshotSync";
+    //强制使用快照来同步leader和follower
     private boolean forceSnapSync = false;
 
     /**
@@ -372,8 +373,9 @@ public class LearnerHandler extends ZooKeeperThread {
     @Override
     public void run() {
         try {
+            //添加到集合里面,相当于leader有了一个follower
             leader.addLearnerHandler(this);
-            //在干什么
+            //在干什么 为什么要加两个呢
             tickOfNextAckDeadline = leader.self.tick.get()
                     + leader.self.initLimit + leader.self.syncLimit;
 
@@ -436,6 +438,7 @@ public class LearnerHandler extends ZooKeeperThread {
             //follower也传了一个 应该有可能不准 所以以这个为准吗
             long newLeaderZxid = ZxidUtils.makeZxid(newEpoch, 0);
 
+            //follower传过来的
             if (this.getVersion() < 0x10000) {
                 // we are going to have to extrapolate the epoch information
                 long epoch = ZxidUtils.getEpochFromZxid(zxid);
@@ -467,6 +470,7 @@ public class LearnerHandler extends ZooKeeperThread {
 
             // Take any necessary action if we need to send TRUNC or DIFF
             // startForwarding() will be called in all cases
+            //所以选举的时候是不会变自己的最后处理的事务的记录的
             boolean needSnap = syncFollower(peerLastZxid, leader.zk.getZKDatabase(), leader);
 
             /* if we are not truncating or sending a diff just send a snapshot */
@@ -703,6 +707,7 @@ public class LearnerHandler extends ZooKeeperThread {
      * @param leader
      * @return true if snapshot transfer is needed.
      */
+    //第一个参数是follower最后的事务
     public boolean syncFollower(long peerLastZxid, ZKDatabase db, Leader leader) {
         /*
          * When leader election is completed, the leader will set its
@@ -719,6 +724,7 @@ public class LearnerHandler extends ZooKeeperThread {
         boolean isPeerNewEpochZxid = (peerLastZxid & 0xffffffffL) == 0;
         // Keep track of the latest zxid which already queued
         //记录已经缓存的事务id
+        //应该是follower应该同步到哪个事务
         long currentZxid = peerLastZxid;
         //是否需要
         boolean needSnap = true;

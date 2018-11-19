@@ -922,7 +922,7 @@ public class FastLeaderElection implements Election {
             //每个服务端发送过来的投票
             Map<Long, Vote> recvset = new HashMap<Long, Vote>();
 
-            //干什么的
+            //干什么的 投票的版本和本地版本不一致的时候加到里面
             Map<Long, Vote> outofelection = new HashMap<Long, Vote>();
 
             int notTimeout = finalizeWait;

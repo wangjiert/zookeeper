@@ -146,6 +146,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         public LearnerType type = LearnerType.PARTICIPANT;
 
         //这个地址是通过静态配置文件配置的
+        //就是直接配置的,不是用;分割之后放在动态配置后面
         public boolean isClientAddrFromStatic = false;
 
         //三个地址的集合
@@ -1117,6 +1118,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         return null;
     }
 
+    //收到高版本的配置的时候会设为true
     boolean shuttingDownLE = false;
     
     @Override
@@ -1210,6 +1212,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
                     } else {
                         try {
                            reconfigFlagClear();
+                           //收到新的配置之后会再次进入这里,重启选举对象
                             if (shuttingDownLE) {
                                shuttingDownLE = false;
                                startLeaderElection();
