@@ -848,6 +848,7 @@ public class LearnerHandler extends ZooKeeperThread {
             }
             LOG.debug("Start forwarding 0x" + Long.toHexString(currentZxid) +
                       " for peer sid: " +  getSid());
+            //是在处理这段时间又新加的事务吧
             leaderLastZxid = leader.startForwarding(this, currentZxid);
         } finally {
             rl.unlock();
