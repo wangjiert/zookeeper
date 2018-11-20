@@ -307,6 +307,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
             return;
         }
         for (Id authId : ids) {
+            //客户端岂不是很容易得到super权限
             if (authId.getScheme().equals("super")) {
                 return;
             }
@@ -685,9 +686,11 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
             // ignore this one
         }
         boolean ephemeralParent = EphemeralType.get(parentRecord.stat.getEphemeralOwner()) == EphemeralType.NORMAL;
+        //临时节点不能有子节点
         if (ephemeralParent) {
             throw new KeeperException.NoChildrenForEphemeralsException(path);
         }
+        //这里倒是有点用了 设置了request的txn
         int newCversion = parentRecord.stat.getCversion()+1;
         if (type == OpCode.createContainer) {
             request.setTxn(new CreateContainerTxn(path, data, listACL, newCversion));
@@ -980,6 +983,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
         // This resolves https://issues.apache.org/jira/browse/ZOOKEEPER-1877
         List<ACL> uniqacls = removeDuplicates(acls);
         List<ACL> rv = new LinkedList<ACL>();
+        //怎么还必须要有权限设置呢
         if (uniqacls == null || uniqacls.size() == 0) {
             throw new KeeperException.InvalidACLException(path);
         }
@@ -1013,6 +1017,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                     throw new KeeperException.InvalidACLException(path);
                 }
             } else {
+                //这里只是看了权限信息里面的身份信息设置是否是对的
                 ServerAuthenticationProvider ap = ProviderRegistry.getServerProvider(id.getScheme());
                 if (ap == null || !ap.isValid(id.getId())) {
                     throw new KeeperException.InvalidACLException(path);

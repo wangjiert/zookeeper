@@ -69,6 +69,7 @@ public interface AuthenticationProvider {
      * 
      * @return true if this provider identifies creators.
      */
+    //好像就是表示这个身份是否能够标示一个客户端
     boolean isAuthenticated();
 
     /**
