@@ -64,6 +64,7 @@ public abstract class ServerCnxn implements Stats, Watcher {
      * The reason is that if we would, old C client doesn't read it, which
      * results in TCP RST packet, i.e. "connection reset by peer".
      */
+    //哇哦 原来最后面的一个字节是新版才会支持的
     boolean isOldClient = true;
 
     private volatile boolean stale = false;

@@ -54,12 +54,15 @@ public enum CreateMode {
      * {@link org.apache.zookeeper.KeeperException.NoNodeException}
      * when creating children inside of this container node.
      */
+    //所以container节点就是一个当没有子节点存在的时候会被自动删除的点
+    //为什么要定时任务去删除呢 直接在删除子节点的时候就吧这个节点删除了多好
     CONTAINER (4, false, false, true, false),
     /**
      * The znode will not be automatically deleted upon client's disconnect.
      * However if the znode has not been modified within the given TTL, it
      * will be deleted once it has no children.
      */
+    //指定时间没有变化就在不存在子节点的时候删除这个节点
     PERSISTENT_WITH_TTL(5, false, false, false, true),
     /**
      * The znode will not be automatically deleted upon client's disconnect,
@@ -74,6 +77,7 @@ public enum CreateMode {
     private boolean ephemeral;
     private boolean sequential;
     private final boolean isContainer;
+    //这个有存在的必要吗 直接用枚举的ordinal不就好了吗
     private int flag;
     private boolean isTTL;
 

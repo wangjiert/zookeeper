@@ -32,7 +32,9 @@ import org.slf4j.LoggerFactory;
  * Responsible for performing local session upgrade. Only request submitted
  * directly to the leader should go through this processor.
  */
-//感觉什么都没做啊直接丢给下一个处理器了 有点像防止超时一样
+//这个处理器就做了一件事 就是当local session创建临时节点的时候会把session升级为global
+//具体的做法就是多加一个创建session的请求
+//如果follower做同样的操作是不是也会升级呢
 public class LeaderRequestProcessor implements RequestProcessor {
     private static final Logger LOG = LoggerFactory
             .getLogger(LeaderRequestProcessor.class);
@@ -52,6 +54,7 @@ public class LeaderRequestProcessor implements RequestProcessor {
             throws RequestProcessorException {
         // Check if this is a local session and we are trying to create
         // an ephemeral node, in which case we upgrade the session
+        //这里的意思是local session不能创建临时节点吗 如果创建了就要升级local session为global级别吗
         Request upgradeRequest = null;
         try {
             upgradeRequest = lzks.checkUpgradeSession(request);

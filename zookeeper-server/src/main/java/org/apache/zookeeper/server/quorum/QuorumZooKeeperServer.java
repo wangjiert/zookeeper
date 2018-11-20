@@ -57,6 +57,7 @@ public abstract class QuorumZooKeeperServer extends ZooKeeperServer {
         upgradeableSessionTracker.start();
     }
 
+    //判断是否需要吧local session升级为global session
     public Request checkUpgradeSession(Request request)
             throws IOException, KeeperException {
         // If this is a request for a local session and it is to
@@ -65,6 +66,9 @@ public abstract class QuorumZooKeeperServer extends ZooKeeperServer {
         // This is called by the request processor thread (either follower
         // or observer request processor), which is unique to a learner.
         // So will not be called concurrently by two threads.
+        //后半段说了个啥 这个方法明明leader也调用了
+        //为什么没有createTTL之类的呢 因为ttl container都不是临时节点
+        //把检查session是否为local放在前面是不是更好呢
         if ((request.type != OpCode.create && request.type != OpCode.create2 && request.type != OpCode.multi) ||
             !upgradeableSessionTracker.isLocalSession(request.sessionId)) {
             return null;
@@ -75,8 +79,10 @@ public abstract class QuorumZooKeeperServer extends ZooKeeperServer {
             request.request.rewind();
             ByteBufferInputStream.byteBuffer2Record(request.request, multiTransactionRecord);
             request.request.rewind();
+            //是否包含临时节点的创建
             boolean containsEphemeralCreate = false;
             for (Op op : multiTransactionRecord) {
+                //我怎么没看到create2的加入呢
                 if (op.getType() == OpCode.create || op.getType() == OpCode.create2) {
                     CreateRequest createRequest = (CreateRequest)op.toRequestRecord();
                     CreateMode createMode = CreateMode.fromFlag(createRequest.getFlags());
@@ -95,6 +101,7 @@ public abstract class QuorumZooKeeperServer extends ZooKeeperServer {
             ByteBufferInputStream.byteBuffer2Record(request.request, createRequest);
             request.request.rewind();
             CreateMode createMode = CreateMode.fromFlag(createRequest.getFlags());
+            //来了来了  查看是否是临时节点 不是的话就不用升级
             if (!createMode.isEphemeral()) {
                 return null;
             }
@@ -112,6 +119,7 @@ public abstract class QuorumZooKeeperServer extends ZooKeeperServer {
         // Make sure to atomically check local session status, upgrade
         // session, and make the session creation request.  This is to
         // avoid another thread upgrading the session in parallel.
+        //local session只会在本地处理 不会请求到另一台机器
         synchronized (upgradeableSessionTracker) {
             if (upgradeableSessionTracker.isLocalSession(sessionId)) {
                 int timeout = upgradeableSessionTracker.upgradeSession(sessionId);

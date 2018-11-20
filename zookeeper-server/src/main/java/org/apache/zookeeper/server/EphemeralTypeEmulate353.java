@@ -44,7 +44,9 @@ public enum EphemeralTypeEmulate353 {
      */
     TTL;
 
+    //这个到时没变
     public static final long CONTAINER_EPHEMERAL_OWNER = Long.MIN_VALUE;
+    //之前的扩展标识是0x0吗
     public static final long MAX_TTL = 0x0fffffffffffffffL;
     public static final long TTL_MASK = 0x8000000000000000L;
 

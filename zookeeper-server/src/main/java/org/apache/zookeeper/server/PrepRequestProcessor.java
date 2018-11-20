@@ -92,6 +92,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
         RequestProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(PrepRequestProcessor.class);
 
+    //是否跳过验证ACL
     static boolean skipACL;
     static {
         skipACL = System.getProperty("zookeeper.skipACL", "no").equals("yes");
@@ -586,6 +587,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 request.setTxn(new CreateSessionTxn(to));
                 request.request.rewind();
                 // only add the global session tracker but not to ZKDb
+                //没有加到dbtree的集合里面
                 zks.sessionTracker.trackSession(request.sessionId, to);
                 zks.setOwner(request.sessionId, request.getOwner());
                 break;
@@ -631,6 +633,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
     }
 
     private void pRequest2TxnCreate(int type, Request request, Record record, boolean deserialize) throws IOException, KeeperException {
+        //难道还会为false吗
         if (deserialize) {
             ByteBufferInputStream.byteBuffer2Record(request.request, record);
         }
@@ -855,6 +858,8 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
             case OpCode.createSession:
             case OpCode.closeSession:
                 if (!request.isLocalSession()) {
+                    //创建会话也会分配一个事务id
+                    //这里面的东西感觉之前已经做过呀 request里面加入了两个值
                     pRequest2Txn(request.type, zks.getNextZxid(), request,
                                  null, true);
                 }
@@ -931,10 +936,14 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
 
     private void validateCreateRequest(String path, CreateMode createMode, Request request, long ttl)
             throws KeeperException {
+        //目前只有ttl是扩展特性
+        //如果没有配置支持扩展特性,这里创建ttl节点的话就报错
         if (createMode.isTTL() && !EphemeralType.extendedEphemeralTypesEnabled()) {
             throw new KeeperException.UnimplementedException();
         }
         try {
+            //主要就是验证如果不是创建ttl节点,ttl值需要为负数
+            //如果是创建ttl节点,ttl需要大于0并小于最大值
             EphemeralType.validateTTL(createMode, ttl);
         } catch (IllegalArgumentException e) {
             throw new BadArgumentsException(path);

@@ -123,6 +123,8 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
     static final private long superSecret = 0XB3415C00L;
 
     //正在处理的请求
+    //什么时候加 什么时候减
+    //丢给第一个processor的时候加
     private final AtomicInteger requestsInProcess = new AtomicInteger(0);
     final Deque<ChangeRecord> outstandingChanges = new ArrayDeque<>();
     // this data structure must be accessed under the outstandingChanges lock
@@ -687,6 +689,8 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
                 && Arrays.equals(passwd, generatePasswd(sessionId));
     }
 
+    //怎么没有设置这个连接的身份信息呢
+    //哇哦 根本就没传 那么是不是只有创建会话之后 再调接口专门设置身份信息呢
     long createSession(ServerCnxn cnxn, byte passwd[], int timeout) {
         if (passwd == null) {
             // Possible since it's just deserialized from a packet on the wire.
@@ -1034,21 +1038,29 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
         ServerMetrics.CONNECTION_REQUEST_COUNT.add(1);
         boolean readOnly = false;
         try {
+            //连接数据的最后面是表示这个连接是否是只读的 只读连接的会话id好像可以随意分配吧
+            //已经有会话id的重连的时候还是用原来的id不会有问题吗 最高位好像表示的是sid吧
             readOnly = bia.readBool("readOnly");
+            //新版本的客户端才会支持这个字节
+            //也就是旧版本的客户端肯定是读写客户端呗
             cnxn.isOldClient = false;
         } catch (IOException e) {
+            //难道没有什么更好的方法来兼容就客户端吗 比如看数据长度
             // this is ok -- just a packet from an old client which
             // doesn't contain readOnly field
             LOG.warn("Connection request from old client "
                     + cnxn.getRemoteSocketAddress()
                     + "; will be dropped if server is in r-o mode");
         }
+        //应该是观察者才会是readonly zookeeper server吧
+        //这是不是也说明了客户端在读写连接的时候 连接字符串不能有观察者的地址
         if (!readOnly && this instanceof ReadOnlyZooKeeperServer) {
             String msg = "Refusing session request for not-read-only client "
                 + cnxn.getRemoteSocketAddress();
             LOG.info(msg);
             throw new CloseRequestException(msg);
         }
+        //可能会存在客户端已经提交的请求在重新选举的过程中被丢弃吗
         if (connReq.getLastZxidSeen() > zkDb.dataTree.lastProcessedZxid) {
             String msg = "Refusing session request for client "
                 + cnxn.getRemoteSocketAddress()

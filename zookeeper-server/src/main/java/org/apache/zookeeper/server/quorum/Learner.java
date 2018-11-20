@@ -483,6 +483,7 @@ public class Learner {
                     PacketInFlight pif = new PacketInFlight();
                     pif.hdr = new TxnHeader();
                     pif.rec = SerializeUtils.deserializeTxn(qp.getData(), pif.hdr);
+                    //第一次岂不就是肯定会满足这个条件吗
                     if (pif.hdr.getZxid() != lastQueued + 1) {
                     LOG.warn("Got zxid 0x"
                             + Long.toHexString(pif.hdr.getZxid())

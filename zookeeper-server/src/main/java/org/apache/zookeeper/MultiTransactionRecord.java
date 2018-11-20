@@ -89,7 +89,9 @@ public class MultiTransactionRecord implements Record, Iterable<Op> {
         MultiHeader h = new MultiHeader();
         h.deserialize(archive, tag);
 
+        //哇哦 h.getDone不是从请求里面读出来的吗
         while (!h.getDone()) {
+            //类型感觉有点少啊
             switch (h.getType()) {
                 case ZooDefs.OpCode.create:
                 case ZooDefs.OpCode.create2:

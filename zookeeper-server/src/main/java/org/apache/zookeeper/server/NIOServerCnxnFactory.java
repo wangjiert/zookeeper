@@ -620,6 +620,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
 
     //什么意思
     int sessionlessCnxnTimeout;
+    //处理超时线程使用的对象
     private ExpiryQueue<NIOServerCnxn> cnxnExpiryQueue;
 
 

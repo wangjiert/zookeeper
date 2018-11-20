@@ -76,6 +76,8 @@ public class NIOServerCnxn extends ServerCnxn {
     private final Queue<ByteBuffer> outgoingBuffers =
         new LinkedBlockingQueue<ByteBuffer>();
 
+    //这个连接的超时时间 由创建会话的时候设定的
+    //那么是不是如果客户端连接之后没有创建会话就不会有超时了
     private int sessionTimeout;
 
     //最开始的时候是null
@@ -84,6 +86,7 @@ public class NIOServerCnxn extends ServerCnxn {
     /**
      * The number of requests that have been submitted but not yet responded to.
      */
+    //这个连接正在处理的请求个数
     private final AtomicInteger outstandingRequests = new AtomicInteger(0);
 
     /**
@@ -92,7 +95,7 @@ public class NIOServerCnxn extends ServerCnxn {
      */
     private long sessionId;
 
-    //开始的时候是1
+    //并行的请求的最大个数
     private final int outstandingLimit;
 
     public NIOServerCnxn(ZooKeeperServer zk, SocketChannel sock,
@@ -211,6 +214,7 @@ public class NIOServerCnxn extends ServerCnxn {
 
     private void requestInterestOpsUpdate() {
         if (isSelectable()) {
+            //调这个方法之前就应该吧sk的interest设置好吧
             selectorThread.addInterestOpsUpdateRequest(sk);
         }
     }

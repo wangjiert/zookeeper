@@ -35,6 +35,8 @@ import java.util.Map;
  * </p>
  * <p>
  * <p>
+ * 如果创建临时节点的会话id最高位也是ff岂不很尴尬
+ * 好像启动扩展的时候有检查sid是不是大于0xfe
  * When the system property <code>zookeeper.extendedTypesEnabled</code> is true, extended types
  * are enabled. An extended ephemeralOwner is defined as an ephemeralOwner whose high 8 bits are
  * set (<code>0xff00000000000000L</code>). The two bytes that follow the high 8 bits are
@@ -103,6 +105,7 @@ public enum EphemeralType {
      *
      * @return 0 or max
      */
+    //能够使用的最大值,反正也就能用五位表示
     public long maxValue() {
         return 0;
     }
@@ -112,6 +115,7 @@ public enum EphemeralType {
      *
      * @return 0 or extended ephemeral owner
      */
+    //把类型对应值装换成标准的ephemeral owner
     public long toEphemeralOwner(long value) {
         return 0;
     }
@@ -165,6 +169,7 @@ public enum EphemeralType {
      */
     public static EphemeralType get(long ephemeralOwner) {
         if (extendedEphemeralTypesEnabled()) {
+            //3.5.3版本兼容
             if (Boolean.getBoolean(TTL_3_5_3_EMULATION_PROPERTY)) {
                 if (EphemeralTypeEmulate353.get(ephemeralOwner) == EphemeralTypeEmulate353.TTL) {
                     return TTL;
@@ -216,6 +221,7 @@ public enum EphemeralType {
         if (mode.isTTL()) {
             TTL.toEphemeralOwner(ttl);
         } else if (ttl >= 0) {
+            //如果不是ttl,值会是-1
             throw new IllegalArgumentException("ttl not valid for mode: " + mode);
         }
     }

@@ -45,7 +45,7 @@ public class LeaderSessionTracker extends UpgradeableSessionTracker {
     /**
      * Server id of the leader
      */
-    //构造的时候传进来的
+    //构造的时候传进来的 这个peer的sid
     private final long serverId;
 
     public LeaderSessionTracker(SessionExpirer expirer,
@@ -140,10 +140,14 @@ public class LeaderSessionTracker extends UpgradeableSessionTracker {
         return globalSessionTracker.touchSession(sessionId, sessionTimeout);
     }
 
+    //怎么只有允许local session这里的所有会话都进了local呢
+    //是因为这个是leader所以特殊吗 还是follower也一样 一样
+    //那还有会话进global吗
     public long createSession(int sessionTimeout) {
         if (localSessionsEnabled) {
             return localSessionTracker.createSession(sessionTimeout);
         }
+        //和上面的区别就是没有往dbtree的集合里面加
         return globalSessionTracker.createSession(sessionTimeout);
     }
 
@@ -160,6 +164,7 @@ public class LeaderSessionTracker extends UpgradeableSessionTracker {
                 localSessionTracker.checkSession(sessionId, owner);
                 // A session can both be a local and global session during
                 // upgrade
+                //可能处理这个的时候 刚好来了个升级session 并且处于加入了global，并没有从local删除
                 if (!isGlobalSession(sessionId)) {
                     return;
                 }

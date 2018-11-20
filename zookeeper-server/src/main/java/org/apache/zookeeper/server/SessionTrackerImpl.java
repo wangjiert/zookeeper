@@ -101,12 +101,15 @@ public class SessionTrackerImpl extends ZooKeeperCriticalThread implements
     //这个就是zookeeper server
     private final SessionExpirer expirer;
 
+    //会话id是这个对象初始化的
     public SessionTrackerImpl(SessionExpirer expirer,
             ConcurrentMap<Long, Integer> sessionsWithTimeout, int tickTime,
             long serverId, ZooKeeperServerListener listener)
     {
         super("SessionTracker", listener);
         this.expirer = expirer;
+        //哎 这个不是连接工厂创建了一个的吗
+        //哇哦 原来这个东西是不会管理连接超时的
         this.sessionExpiryQueue = new ExpiryQueue<SessionImpl>(tickTime);
         this.sessionsWithTimeout = sessionsWithTimeout;
         this.nextSessionId.set(initializeNextSession(serverId));
@@ -153,6 +156,8 @@ public class SessionTrackerImpl extends ZooKeeperCriticalThread implements
     }
 
     @Override
+    //哇哦 这不就是在做超时线程的工作吗
+    //好像不对呀 这里没有关闭 额也关闭了
     public void run() {
         try {
             while (running) {
@@ -255,6 +260,7 @@ public class SessionTrackerImpl extends ZooKeeperCriticalThread implements
         }
     }
 
+    //并没有往dbtree的集合里面加入
     public long createSession(int sessionTimeout) {
         long sessionId = nextSessionId.getAndIncrement();
         trackSession(sessionId, sessionTimeout);
@@ -318,6 +324,7 @@ public class SessionTrackerImpl extends ZooKeeperCriticalThread implements
             throw new KeeperException.SessionExpiredException();
         }
 
+        //创建会话的时候owner是null
         if (session.owner == null) {
             session.owner = owner;
         } else if (session.owner != owner) {

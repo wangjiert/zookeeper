@@ -529,6 +529,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
      * Whether learners in this quorum should upgrade local sessions to
      * global. Only matters if local sessions are enabled.
      */
+    //local session创建临时节点的时候会升级local session到global session
     protected boolean localSessionsUpgradingEnabled = true;
 
     /**
