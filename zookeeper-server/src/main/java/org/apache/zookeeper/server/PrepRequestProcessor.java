@@ -429,6 +429,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 int newVersion = checkAndIncVersion(nodeRecord.stat.getVersion(), setDataRequest.getVersion(), path);
                 request.setTxn(new SetDataTxn(path, setDataRequest.getData(), newVersion));
                 nodeRecord = nodeRecord.duplicate(request.getHdr().getZxid());
+                //这个是直接改到了datatree里面
                 nodeRecord.stat.setVersion(newVersion);
                 addChangeRecord(nodeRecord);
                 break;

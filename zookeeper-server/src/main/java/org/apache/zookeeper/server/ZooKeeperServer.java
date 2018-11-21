@@ -125,6 +125,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
     //正在处理的请求
     //什么时候加 什么时候减
     //丢给第一个processor的时候加
+    //final processor处理玩之后减1
     private final AtomicInteger requestsInProcess = new AtomicInteger(0);
     final Deque<ChangeRecord> outstandingChanges = new ArrayDeque<>();
     // this data structure must be accessed under the outstandingChanges lock

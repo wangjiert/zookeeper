@@ -389,6 +389,7 @@ public class Leader {
     final ConcurrentMap<Long, Proposal> outstandingProposals = new ConcurrentHashMap<Long, Proposal>();
 
     //已经被大多数peer接受的提议
+    //最倒数第二个处理器会被删
     private final ConcurrentLinkedQueue<Proposal> toBeApplied = new ConcurrentLinkedQueue<Proposal>();
 
     // VisibleForTesting
@@ -455,6 +456,8 @@ public class Leader {
 
     // when a reconfig occurs where the leader is removed or becomes an observer,
    // it does not commit ops after committing the reconfig
+    //reconfig的时候会变 控制是否允许提交
+    //要是为false的时候有提交就直接返回了,那么这个确认以后还会再来吗
     boolean allowedToCommit = true;
 
     /**
@@ -1027,6 +1030,7 @@ public class Leader {
         }
     }
 
+    //最后一次确认的事务id
     long lastCommitted = -1;
 
     /**

@@ -88,6 +88,7 @@ public class CommitProcessor extends ZooKeeperCriticalThread implements
     /**
      * Requests that have been committed.
      */
+    //follower提交
     protected final LinkedBlockingQueue<Request> committedRequests =
         new LinkedBlockingQueue<Request>();
 
@@ -95,10 +96,12 @@ public class CommitProcessor extends ZooKeeperCriticalThread implements
      * Requests that we are holding until commit comes in. Keys represent
      * session ids, each value is a linked list of the session's requests.
      */
+    //相当于把每个client的请求排序吗
     protected final Map<Long, LinkedList<Request>> pendingRequests =
             new HashMap<Long, LinkedList<Request>>(10000);
 
     /** The number of requests currently being processed */
+    //正在处理的请求的个数
     protected final AtomicInteger numRequestsProcessing = new AtomicInteger(0);
 
     RequestProcessor nextProcessor;
@@ -116,6 +119,7 @@ public class CommitProcessor extends ZooKeeperCriticalThread implements
      * leader or we just let the sync operation flow through like a read. The flag will
      * be false if the CommitProcessor is in a Leader pipeline.
      */
+    //是否需要等待 为什么leader不需要等待
     boolean matchSyncs;
 
     public CommitProcessor(RequestProcessor nextProcessor, String id,
@@ -234,6 +238,7 @@ public class CommitProcessor extends ZooKeeperCriticalThread implements
 
                 // Handle a single committed request
                 if (commitIsWaiting && !stopped){
+                    //等待之前的请求处理完
                     waitForEmptyPool();
 
                     if (stopped){
