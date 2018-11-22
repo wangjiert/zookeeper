@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,23 +29,27 @@ import org.apache.zookeeper.server.ServerCnxn;
 
 public class DigestAuthenticationProvider implements AuthenticationProvider {
     private static final Logger LOG =
-        LoggerFactory.getLogger(DigestAuthenticationProvider.class);
+            LoggerFactory.getLogger(DigestAuthenticationProvider.class);
 
-    /** specify a command line property with key of 
+    /**
+     * specify a command line property with key of
      * "zookeeper.DigestAuthenticationProvider.superDigest"
      * and value of "super:<base64encoded(SHA1(password))>" to enable
      * super user access (i.e. acls disabled)
      */
+    //超级用户的用户名密码
     private final static String superDigest = System.getProperty(
-        "zookeeper.DigestAuthenticationProvider.superDigest");
+            "zookeeper.DigestAuthenticationProvider.superDigest");
 
     public String getScheme() {
         return "digest";
     }
 
+    //每三个字节为一组,每组分四个部分,每部分转成字符,不足三个字节就补充=
+    //六个字节表示索引 刚好有63个,剩下一个是=表示是补充的
     static final private String base64Encode(byte b[]) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < b.length;) {
+        for (int i = 0; i < b.length; ) {
             int pad = 0;
             int v = (b[i++] & 0xff) << 16;
             if (i < b.length) {
@@ -91,14 +95,14 @@ public class DigestAuthenticationProvider implements AuthenticationProvider {
     static public String generateDigest(String idPassword)
             throws NoSuchAlgorithmException {
         String parts[] = idPassword.split(":", 2);
+        //算MD5值吧
         byte digest[] = MessageDigest.getInstance("SHA1").digest(
                 idPassword.getBytes());
         return parts[0] + ":" + base64Encode(digest);
     }
 
-    public KeeperException.Code 
-        handleAuthentication(ServerCnxn cnxn, byte[] authData)
-    {
+    public KeeperException.Code
+    handleAuthentication(ServerCnxn cnxn, byte[] authData) {
         String id = new String(authData);
         try {
             String digest = generateDigest(id);
@@ -108,26 +112,31 @@ public class DigestAuthenticationProvider implements AuthenticationProvider {
             cnxn.addAuthInfo(new Id(getScheme(), digest));
             return KeeperException.Code.OK;
         } catch (NoSuchAlgorithmException e) {
-            LOG.error("Missing algorithm",e);
+            LOG.error("Missing algorithm", e);
         }
         return KeeperException.Code.AUTHFAILED;
     }
 
+    //可以用来表示一个客户端
     public boolean isAuthenticated() {
         return true;
     }
 
+    //格式就是  用户名:密码
     public boolean isValid(String id) {
         String parts[] = id.split(":");
         return parts.length == 2;
     }
 
+    //不支持正则或者通配符呀
     public boolean matches(String id, String aclExpr) {
         return id.equals(aclExpr);
     }
 
-    /** Call with a single argument of user:pass to generate authdata.
-     * Authdata output can be used when setting superDigest for example. 
+    /**
+     * Call with a single argument of user:pass to generate authdata.
+     * Authdata output can be used when setting superDigest for example.
+     *
      * @param args single argument of user:pass
      * @throws NoSuchAlgorithmException
      */

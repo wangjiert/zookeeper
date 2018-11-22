@@ -38,6 +38,7 @@ public class IPAuthenticationProvider implements AuthenticationProvider {
 
     // This is a bit weird but we need to return the address and the number of
     // bytes (to distinguish between IPv4 and IPv6
+    //支持带mask的写法
     private byte[] addr2Bytes(String addr) {
         byte b[] = v4addr2Bytes(addr);
         // TODO Write the v6addr2Bytes
@@ -67,6 +68,7 @@ public class IPAuthenticationProvider implements AuthenticationProvider {
 
     private void mask(byte b[], int bits) {
         int start = bits / 8;
+        //和下面的可以直接合并吧
         int startMask = (1 << (8 - (bits % 8))) - 1;
         startMask = ~startMask;
         while (start < b.length) {
@@ -82,6 +84,7 @@ public class IPAuthenticationProvider implements AuthenticationProvider {
         if (aclAddr == null) {
             return false;
         }
+        //这不就是个定值吗
         int bits = aclAddr.length * 8;
         if (parts.length == 2) {
             try {
@@ -113,6 +116,7 @@ public class IPAuthenticationProvider implements AuthenticationProvider {
 
     public boolean isValid(String id) {
         String parts[] = id.split("/", 2);
+        //ip地址的四个部分
         byte aclAddr[] = addr2Bytes(parts[0]);
         if (aclAddr == null) {
             return false;

@@ -99,8 +99,11 @@ public class ZKConfig {
      * this configuration.
      */
     protected void handleBackwardCompatibility() {
+        //一个包的最大字节数
         properties.put(JUTE_MAXBUFFER, System.getProperty(JUTE_MAXBUFFER));
+        //kinit命令的位置
         properties.put(KINIT_COMMAND, System.getProperty(KINIT_COMMAND));
+        //jass相关吧
         properties.put(JGSS_NATIVE, System.getProperty(JGSS_NATIVE));
 
         ClientX509Util clientX509Util = new ClientX509Util();

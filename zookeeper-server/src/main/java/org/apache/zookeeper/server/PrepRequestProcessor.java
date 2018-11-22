@@ -530,6 +530,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                                    if (qs.id == nqs.id) {
                                        continue;
                                    }
+                                   //比较新加的地址是否和已经存在的地址冲突
                                    qs.checkAddressDuplicate(nqs);
                                }
 

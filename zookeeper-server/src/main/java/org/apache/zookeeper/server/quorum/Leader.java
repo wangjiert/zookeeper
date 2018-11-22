@@ -458,6 +458,7 @@ public class Leader {
    // it does not commit ops after committing the reconfig
     //reconfig的时候会变 控制是否允许提交
     //要是为false的时候有提交就直接返回了,那么这个确认以后还会再来吗
+    //当自己不是leader之后就设为false了 那请求还是没有了呀
     boolean allowedToCommit = true;
 
     /**
@@ -755,6 +756,7 @@ public class Leader {
 
        //check if I'm in the new configuration with the same quorum address -
        // if so, I'll remain the leader
+        //万一选举地址变了呢 好像没什么影响 反正把配置发给其他人之后 就都知道了
        if (newQVAcksetPair.getQuorumVerifier().getVotingMembers().containsKey(self.getId()) &&
                newQVAcksetPair.getQuorumVerifier().getVotingMembers().get(self.getId()).addr.equals(self.getQuorumAddress())){
            return self.getId();
@@ -763,6 +765,7 @@ public class Leader {
        // acknowledged the reconfig op (there must be a quorum). Choose one of them as
        // current leader candidate
        HashSet<Long> candidates = new HashSet<Long>(newQVAcksetPair.getAckset());
+       //为什么要删除自己呢 万一自己只是地址变了呢
        candidates.remove(self.getId()); // if we're here, I shouldn't be the leader
        long curCandidate = candidates.iterator().next();
 
@@ -775,6 +778,7 @@ public class Leader {
        while (p!=null && !candidates.isEmpty()) {
            for (Proposal.QuorumVerifierAcksetPair qvAckset: p.qvAcksetPairs){
                //reduce the set of candidates to those that acknowledged p
+               //取交集
                candidates.retainAll(qvAckset.getAckset());
                //no candidate acked p, return the best candidate found so far
                if (candidates.isEmpty()) return curCandidate;
@@ -800,6 +804,8 @@ public class Leader {
        // pending all wait for a quorum of old and new config, so it's not possible to get enough acks
        // for an operation without getting enough acks for preceding ops. But in the future if multiple
        // concurrent reconfigs are allowed, this can happen.
+        //上一个事务还没处理 下一个事务就不会处理
+        //如果下一个事务得到了大部分的确认,上一个事务一定会被确认
        if (outstandingProposals.containsKey(zxid - 1)) return false;
 
        // in order to be committed, a proposal must be accepted by a quorum.
@@ -810,6 +816,8 @@ public class Leader {
         }
 
         // commit proposals in order
+        //什么时候会漏掉提议呢
+        //如果一个提议得不到大部分follower的确认,整个集群会发生什么呢
         if (zxid != lastCommitted+1) {
            LOG.warn("Commiting zxid 0x" + Long.toHexString(zxid)
                     + " from " + followerAddr + " not first!");
@@ -872,6 +880,7 @@ public class Leader {
      * @param followerAddr
      */
     synchronized public void processAck(long sid, long zxid, SocketAddress followerAddr) {
+        //这样好吗 直接返回了 这个确认以后也不会再来了吧
         if (!allowedToCommit) return; // last op committed was a leader change - from now on
                                      // the new leader should commit
         if (LOG.isTraceEnabled()) {
@@ -884,6 +893,8 @@ public class Leader {
             LOG.trace("outstanding proposals all");
         }
 
+        //这是涉及到再选举吗
+        //这个是事务id自动增长到了 还是某种条件下自己设置的呢
         if ((zxid & 0xffffffffL) == 0) {
             /*
              * We no longer process NEWLEADER ack with this method. However,
@@ -893,13 +904,17 @@ public class Leader {
             return;
         }
 
-
+        //在等待回复的提议吗
+        //也是慢的follower确认的时候如果所有提议已经被处理了就会为空
         if (outstandingProposals.size() == 0) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("outstanding is 0");
             }
             return;
         }
+        //上一个确认的事务id
+        //因为收到大部分follower的回复就开始处理确认了
+        //一些慢的就会导致比上一个处理事务的id小或者等于
         if (lastCommitted >= zxid) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("proposal has already been committed, pzxid: 0x{} zxid: 0x{}",

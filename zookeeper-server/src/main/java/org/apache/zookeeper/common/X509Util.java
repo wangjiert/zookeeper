@@ -81,11 +81,17 @@ public abstract class X509Util {
 
     private String sslProtocolProperty = getConfigPrefix() + "protocol";
     private String cipherSuitesProperty = getConfigPrefix() + "ciphersuites";
+    //证书仓库位置
     private String sslKeystoreLocationProperty = getConfigPrefix() + "keyStore.location";
+    //证书仓库密码
     private String sslKeystorePasswdProperty = getConfigPrefix() + "keyStore.password";
+    //信任的证书的仓库位置
     private String sslTruststoreLocationProperty = getConfigPrefix() + "trustStore.location";
+    //仓库密码
     private String sslTruststorePasswdProperty = getConfigPrefix() + "trustStore.password";
+    //验证主机是什么鬼呢
     private String sslHostnameVerificationEnabledProperty = getConfigPrefix() + "hostnameVerification";
+    //???
     private String sslCrlEnabledProperty = getConfigPrefix() + "crl";
     private String sslOcspEnabledProperty = getConfigPrefix() + "ocsp";
 

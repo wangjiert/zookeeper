@@ -155,6 +155,7 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
             return KeeperException.Code.AUTHFAILED;
         }
 
+        //最前面的是自己的证书,然后是证书机构的证书
         X509Certificate clientCert = certChain[0];
 
         try {

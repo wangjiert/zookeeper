@@ -46,6 +46,7 @@ public interface AuthenticationProvider {
      *                the authentication data received.
      * @return TODO
      */
+    //添加认证信息
     KeeperException.Code handleAuthentication(ServerCnxn cnxn, byte authData[]);
 
     /**
