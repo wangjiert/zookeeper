@@ -68,7 +68,9 @@ public class Login {
 
     private Subject subject = null;
     private Thread t = null;
+    //是否使用kerberos
     private boolean isKrbTicket = false;
+    //是否使用缓存 在哪里用呢
     private boolean isUsingTicketCache = false;
 
     /** Random number generator */
@@ -76,6 +78,7 @@ public class Login {
 
     private LoginContext login = null;
     private String loginContextName = null;
+    //就是完整的用户名呀
     private String principal = null;
 
     // Initialize 'lastLogin' to do a login at first time
@@ -102,9 +105,11 @@ public class Login {
             throws LoginException {
         this.zkConfig=zkConfig;
         this.callbackHandler = callbackHandler;
+        //认证成功
         login = login(loginContextName);
         this.loginContextName = loginContextName;
         subject = login.getSubject();
+        //这个里面放的就是kerberos的ticket
         isKrbTicket = !subject.getPrivateCredentials(KerberosTicket.class).isEmpty();
         AppConfigurationEntry entries[] = Configuration.getConfiguration().getAppConfigurationEntry(loginContextName);
         for (AppConfigurationEntry entry: entries) {
@@ -118,6 +123,7 @@ public class Login {
             if (entry.getOptions().get("principal") != null) {
                 principal = (String)entry.getOptions().get("principal");
             }
+            //看到这个就更能肯定jaas只有一个模块了
             break;
         }
 
@@ -331,8 +337,10 @@ public class Login {
     }
 
     private synchronized KerberosTicket getTGT() {
+        //这是不是在拿自己和kerberos服务端的tgt呢
         Set<KerberosTicket> tickets = subject.getPrivateCredentials(KerberosTicket.class);
         for(KerberosTicket ticket: tickets) {
+            //应该就是kerberos的凭证
             KerberosPrincipal server = ticket.getServer();
             if (server.getName().equals("krbtgt/" + server.getRealm() + "@" + server.getRealm())) {
                 LOG.debug("Client principal is \"" + ticket.getClient().getName() + "\".");

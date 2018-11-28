@@ -115,6 +115,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
     LeaderElectionBean jmxLeaderElectionBean;
     private QuorumCnxManager qcm;
     QuorumAuthServer authServer;
+    //用于验证follower连接leader
     QuorumAuthLearner authLearner;
 
     /**
