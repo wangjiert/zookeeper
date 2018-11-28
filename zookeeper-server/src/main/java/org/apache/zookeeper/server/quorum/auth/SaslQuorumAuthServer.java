@@ -53,6 +53,7 @@ public class SaslQuorumAuthServer implements QuorumAuthServer {
             throws SaslException {
         this.quorumRequireSasl = quorumRequireSasl;
         try {
+            //找到关于jaas的配置 就是配置了那几个login modules
             AppConfigurationEntry entries[] = Configuration.getConfiguration()
                     .getAppConfigurationEntry(loginContext);
             if (entries == null || entries.length == 0) {
