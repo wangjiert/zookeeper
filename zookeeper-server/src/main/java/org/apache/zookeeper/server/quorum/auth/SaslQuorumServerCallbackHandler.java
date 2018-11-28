@@ -46,6 +46,7 @@ public class SaslQuorumServerCallbackHandler implements CallbackHandler {
     private static final Logger LOG = LoggerFactory.getLogger(SaslQuorumServerCallbackHandler.class);
 
     private String userName;
+    //用户名密码也配置在里面
     private final Map<String,String> credentials = new HashMap<String,String>();
     private final Set<String> authzHosts;
 

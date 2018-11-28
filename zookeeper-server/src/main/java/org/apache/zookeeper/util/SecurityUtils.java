@@ -160,6 +160,7 @@ public final class SecurityUtils {
                 try {
                     final Object[] principals = subject.getPrincipals()
                             .toArray();
+                    //只有一个吧
                     final Principal servicePrincipal = (Principal) principals[0];
 
                     // e.g. servicePrincipalNameAndHostname :=
@@ -170,6 +171,7 @@ public final class SecurityUtils {
                     int indexOf = servicePrincipalNameAndHostname.indexOf("/");
 
                     // e.g. servicePrincipalName := "zookeeper"
+                    //所以前面的是什么呢
                     final String servicePrincipalName = servicePrincipalNameAndHostname
                             .substring(0, indexOf);
 

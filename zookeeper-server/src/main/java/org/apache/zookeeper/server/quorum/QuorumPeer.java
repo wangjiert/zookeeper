@@ -615,6 +615,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
      * Quorum server login context name in jaas-conf file to read the kerberos
      * security details. Defaulting to 'QuorumServer'.
      */
+    //跟配置login module一样的意思吗
     protected String quorumServerLoginContext;
 
     // TODO: need to tune the default value of thread size
