@@ -56,18 +56,21 @@ public class FileTxnSnapLog {
     final File snapDir;
     TxnLog txnLog;
     SnapShot snapLog;
-    //在恢复阶段控制database的lasttransid
+    //在恢复阶段控制database的last trans id
     private final boolean autoCreateDB;
     public final static int VERSION = 2;
+    //在指定的目录下面还有创建version+VERSION的目录,这个子目录才是真的放数据的目录
     public final static String version = "version-";
 
     private static final Logger LOG = LoggerFactory.getLogger(FileTxnSnapLog.class);
 
+    //这个是日志目录是否自动创建
     public static final String ZOOKEEPER_DATADIR_AUTOCREATE =
             "zookeeper.datadir.autocreate";
 
     public static final String ZOOKEEPER_DATADIR_AUTOCREATE_DEFAULT = "true";
 
+    //这个是db是否自动创建
     static final String ZOOKEEPER_DB_AUTOCREATE = "zookeeper.db.autocreate";
 
     private static final String ZOOKEEPER_DB_AUTOCREATE_DEFAULT = "true";

@@ -56,12 +56,14 @@ public final class SecurityUtils {
      * @return saslclient object
      * @throws SaslException
      */
+    //搞这么多只是用来认证吗 都不设计授权以及加密传输
     public static SaslClient createSaslClient(final Subject subject,
             final String servicePrincipal, final String protocol,
             final String serverName, final Logger LOG, final String entity) throws SaslException {
         SaslClient saslClient;
         // Use subject.getPrincipals().isEmpty() as an indication of which SASL
         // mechanism to use: if empty, use DIGEST-MD5; otherwise, use GSSAPI.
+        //还能临时换啊
         if (subject.getPrincipals().isEmpty()) {
             // no principals: must not be GSSAPI: use DIGEST-MD5 mechanism
             // instead.
@@ -150,14 +152,20 @@ public final class SecurityUtils {
      * @param LOG logger
      * @return sasl server object
      */
+    //protocol zookeeper
+    //serverName zk-sasl-md5
     public static SaslServer createSaslServer(final Subject subject,
             final String protocol, final String serverName,
             final CallbackHandler callbackHandler, final Logger LOG) {
+        //这个subject是和kerberos服务端进行认证后的标识
+        //里面是不是含有自己和kerberos服务端的加密key呢
         if (subject != null) {
             // server is using a JAAS-authenticated subject: determine service
             // principal name and hostname from zk server's subject.
+            //应该只有一个
             if (subject.getPrincipals().size() > 0) {
                 try {
+                    //就是自己的服务的principal
                     final Object[] principals = subject.getPrincipals()
                             .toArray();
                     //只有一个吧
@@ -165,24 +173,28 @@ public final class SecurityUtils {
 
                     // e.g. servicePrincipalNameAndHostname :=
                     // "zookeeper/myhost.foo.com@FOO.COM"
+                    //这个到底有没有返回域名呢
+                    //很明显是返回了
                     final String servicePrincipalNameAndHostname = servicePrincipal
                             .getName();
 
                     int indexOf = servicePrincipalNameAndHostname.indexOf("/");
 
                     // e.g. servicePrincipalName := "zookeeper"
-                    //所以前面的是什么呢
+                    //服务的名字吗
                     final String servicePrincipalName = servicePrincipalNameAndHostname
                             .substring(0, indexOf);
 
                     // e.g. serviceHostnameAndKerbDomain :=
                     // "myhost.foo.com@FOO.COM"
+                    //主机名@域名
                     final String serviceHostnameAndKerbDomain = servicePrincipalNameAndHostname
                             .substring(indexOf + 1,
                                     servicePrincipalNameAndHostname.length());
 
                     indexOf = serviceHostnameAndKerbDomain.indexOf("@");
                     // e.g. serviceHostname := "myhost.foo.com"
+                    //主机名
                     final String serviceHostname = serviceHostnameAndKerbDomain
                             .substring(0, indexOf);
 
@@ -195,8 +207,12 @@ public final class SecurityUtils {
                             + "'");
                     LOG.debug("SASL mechanism(mech) is '" + mech + "'");
 
+
                     boolean usingNativeJgss = Boolean
                             .getBoolean("sun.security.jgss.native");
+                    //是否允许使用本地的api 但是这个不应该是jdk自己管理的吗 怎么这个代码自己在处理这个逻辑
+                    //整个东西就是加了一个凭证到subject里面
+                    //难道说认证的时候还会不加凭证吗
                     if (usingNativeJgss) {
                         // http://docs.oracle.com/javase/6/docs/technotes/guides/security/jgss/jgss-features.html
                         // """
@@ -210,14 +226,17 @@ public final class SecurityUtils {
                         // """
                         try {
                             GSSManager manager = GSSManager.getInstance();
+                            //这个代表使用krb5的认证技术
+                            //不同的Oid可以用来表示使用不同的认证机制
                             Oid krb5Mechanism = new Oid("1.2.840.113554.1.2.2");
                             GSSName gssName = manager.createName(
                                     servicePrincipalName + "@"
                                             + serviceHostname,
-                                    GSSName.NT_HOSTBASED_SERVICE);
+                                    GSSName.NT_HOSTBASED_SERVICE);//这个相当于告诉底层机制用service@hostname形式解析传进去的原始字符
                             GSSCredential cred = manager.createCredential(
                                     gssName, GSSContext.DEFAULT_LIFETIME,
-                                    krb5Mechanism, GSSCredential.ACCEPT_ONLY);
+                                    krb5Mechanism, GSSCredential.ACCEPT_ONLY);//表示这个凭证只是用来接受连接
+                            //为什么要手动添加凭证进去呢
                             subject.getPrivateCredentials().add(cred);
                             LOG.debug("Added private credential to service principal name: '{}',"
                                             + " GSSCredential name: {}", servicePrincipalName, cred.getName());
@@ -233,7 +252,7 @@ public final class SecurityUtils {
                                         try {
                                             SaslServer saslServer;
                                             saslServer = Sasl.createSaslServer(
-                                                    mech, servicePrincipalName,
+                                                    mech, servicePrincipalName,//这个协议的名字怎么就变成传服务的名字了呢
                                                     serviceHostname, null,
                                                     callbackHandler);
                                             return saslServer;

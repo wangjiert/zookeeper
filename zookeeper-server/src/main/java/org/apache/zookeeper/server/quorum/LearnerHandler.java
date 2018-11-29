@@ -173,6 +173,7 @@ public class LearnerHandler extends ZooKeeperThread {
      */
     public static final String FORCE_SNAP_SYNC = "zookeeper.forceSnapshotSync";
     //强制使用快照来同步leader和follower
+    //仅仅只是为了测试,生产环境不应该配置为true
     private boolean forceSnapSync = false;
 
     /**
@@ -720,11 +721,11 @@ public class LearnerHandler extends ZooKeeperThread {
          * zxid in our history. In this case, we will ignore TRUNC logic and
          * always send DIFF if we have old enough history
          */
-        //好像是表示follower没有处理新事务
+        //follwer已经更新到了最新的事务id
         boolean isPeerNewEpochZxid = (peerLastZxid & 0xffffffffL) == 0;
         // Keep track of the latest zxid which already queued
-        //记录已经缓存的事务id
-        //应该是follower应该同步到哪个事务
+        //follower当前处理的事务id
+        //后面会改到和leader最后的事务id相同的值
         long currentZxid = peerLastZxid;
         //是否需要
         boolean needSnap = true;
@@ -733,9 +734,10 @@ public class LearnerHandler extends ZooKeeperThread {
         ReadLock rl = lock.readLock();
         try {
             rl.lock();
+            //缓存的事务的最大id和最小id
             long maxCommittedLog = db.getmaxCommittedLog();
             long minCommittedLog = db.getminCommittedLog();
-            //master当前的事务id
+            //master选举之前处理的最后一个事务id
             long lastProcessedZxid = db.getDataTreeLastProcessedZxid();
 
             LOG.info("Synchronizing with Follower sid: {} maxCommittedLog=0x{}"
@@ -746,7 +748,8 @@ public class LearnerHandler extends ZooKeeperThread {
                     Long.toHexString(lastProcessedZxid),
                     Long.toHexString(peerLastZxid));
 
-            //没有事物提交的缓存了
+            //没有事务缓存了
+            //为什么设置最大值最小值相同呢 明明就是空的啊
             if (db.getCommittedLog().isEmpty()) {
                 /*
                  * It is possible that committedLog is empty. In that case
@@ -781,12 +784,11 @@ public class LearnerHandler extends ZooKeeperThread {
             if (forceSnapSync) {
                 // Force leader to use snapshot to sync with follower
                 LOG.warn("Forcing snapshot sync - should not see this in production");
-            } else if (lastProcessedZxid == peerLastZxid) {//peerLastZxid是follower最后处理的事务id
-                //master和follower的事务相同 不应该什么都不做吗
+            } else if (lastProcessedZxid == peerLastZxid) {
                 // Follower is already sync with us, send empty diff
                 LOG.info("Sending DIFF zxid=0x" + Long.toHexString(peerLastZxid) +
                          " for peer sid: " +  getSid());
-                //怎么还是往集合里面加了一个包呢 不是一样的吗
+                //diff这个包并不做什么,关键是看后面的包
                 queueOpPacket(Leader.DIFF, peerLastZxid);
                 //不需要同步操作的意思吧
                 needOpPacket = false;
@@ -878,13 +880,11 @@ public class LearnerHandler extends ZooKeeperThread {
      */
     protected long queueCommittedProposals(Iterator<Proposal> itr,
             long peerLastZxid, Long maxZxid, Long lastCommittedZxid) {
-        //follower是不是从epoch改变之后还没开始写的事务
         boolean isPeerNewEpochZxid = (peerLastZxid & 0xffffffffL) == 0;
         //应该是记录最后记录到的事务id
         long queuedZxid = peerLastZxid;
         // as we look through proposals, this variable keeps track of previous
         // proposal Id.
-        //follower当前事务的上一次的事务id
         long prevProposalZxid = -1;
         while (itr.hasNext()) {
             Proposal propose = itr.next();

@@ -115,11 +115,14 @@ public class QuorumPeerMain {
         throws ConfigException, IOException, AdminServerException
     {
         QuorumPeerConfig config = new QuorumPeerConfig();
+        //不等于1就肯定是单例模式在运行
         if (args.length == 1) {
             config.parse(args[0]);
         }
 
         // Start and schedule the the purge task
+        //要是单例模式呢 这些都是空的吧 还是说有个默认值
+        //单例模式的时候这个会由于清理间隔等于0而不启动
         DatadirCleanupManager purgeMgr = new DatadirCleanupManager(config
                 .getDataDir(), config.getDataLogDir(), config
                 .getSnapRetainCount(), config.getPurgeInterval());

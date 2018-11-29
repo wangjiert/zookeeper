@@ -40,21 +40,26 @@ public class DatadirCleanupManager {
     /**
      * Status of the dataDir purge task
      */
+    //任务还会完成的吗
+    //结束任务之后就进入了完成状态
     public enum PurgeTaskStatus {
         NOT_STARTED, STARTED, COMPLETED;
     }
 
+    //这个任务当前的状态
     private PurgeTaskStatus purgeTaskStatus = PurgeTaskStatus.NOT_STARTED;
 
+    //快照存放目录,值是解析配置文件的时候得到的
     private final File snapDir;
-
+    //日志存放目录
     private final File dataLogDir;
 
-    //至少是3
+    //清理的时候保留多少 至少是3
     private final int snapRetainCount;
 
-    //好像可能为0
     //小于等于0就是不要定时清理
+    //单例模式的时候就不需要清理
+    //是以消息为单位的定时任务
     private final int purgeInterval;
 
     private Timer timer;
@@ -116,6 +121,7 @@ public class DatadirCleanupManager {
     /**
      * Shutdown the purge task.
      */
+    //怎么只有测试代码在关闭这个任务呢
     public void shutdown() {
         if (PurgeTaskStatus.STARTED == purgeTaskStatus) {
             LOG.info("Shutting down purge task.");
@@ -137,6 +143,8 @@ public class DatadirCleanupManager {
             snapRetainCount = count;
         }
 
+        //这个任务发生异常也没事 下次又会启动
+        //这个任务实在Timer的线程里面完成的,如果致命异常的话 那不就完蛋了
         @Override
         public void run() {
             LOG.info("Purge task started.");

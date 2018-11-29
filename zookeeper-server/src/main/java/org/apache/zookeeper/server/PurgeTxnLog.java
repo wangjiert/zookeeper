@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
  * files and snapdir files keeping the last "-n" snapshot files
  * and the corresponding logs.
  */
+//看来这个类是有对应的命令的
 @InterfaceAudience.Public
 public class PurgeTxnLog {
     private static final Logger LOG = LoggerFactory.getLogger(PurgeTxnLog.class);
@@ -178,6 +179,7 @@ public class PurgeTxnLog {
         File dataDir = validateAndGetFile(args[0]);
         File snapDir = dataDir;
         int num = -1;
+        //就是传进来的-n
         String countOption = "";
         if (args.length == 3) {
             countOption = args[1];
