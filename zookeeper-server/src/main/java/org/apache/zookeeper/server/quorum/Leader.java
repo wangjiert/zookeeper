@@ -106,7 +106,6 @@ public class Leader {
     volatile LearnerCnxAcceptor cnxAcceptor = null;
 
     // list of all the learners, including followers and observers
-    //相当与缓存所有的follower
     private final HashSet<LearnerHandler> learners =
         new HashSet<LearnerHandler>();
 
@@ -1301,25 +1300,22 @@ public class Leader {
         }
     }
 
-    //从这个方法来看呢 epoch好像在不停的涨 并不是选举完一次增加1
-    //这个方法会一直等待 直到有一半的follower加进来在返回
+    //获得下一代的epoch
     public long getEpochToPropose(long sid, long lastAcceptedEpoch) throws InterruptedException, IOException {
         synchronized(connectingFollowers) {
-            //选举代数稳定了才会设为false
+            //已经有大部分人认同了同一个epoch,所以后来的follower就不需要在等待了直接返回
             if (!waitingForNewEpoch) {
                 return epoch;
             }
-            //epoch从-1开始
+            //选择最大epoch
             if (lastAcceptedEpoch >= epoch) {
                 epoch = lastAcceptedEpoch+1;
             }
-            //如果这个peeer是参与者  这个peer不是leader吗 难道还不是参与者啊
             if (isParticipant(sid)) {
-                //用于判断是否有一般的peer连接了这个master
                 connectingFollowers.add(sid);
             }
             QuorumVerifier verifier = self.getQuorumVerifier();
-            //已经有一半的follower连接了master
+            //leader的线程里面会把自己加进来
             if (connectingFollowers.contains(self.getId()) &&
                                             verifier.containsQuorum(connectingFollowers)) {
                 waitingForNewEpoch = false;

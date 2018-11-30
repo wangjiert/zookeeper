@@ -374,9 +374,8 @@ public class LearnerHandler extends ZooKeeperThread {
     @Override
     public void run() {
         try {
-            //添加到集合里面,相当于leader有了一个follower
             leader.addLearnerHandler(this);
-            //在干什么 为什么要加两个呢
+            //加上等待消息的tick和同步的tick以及上次的tick 干嘛
             tickOfNextAckDeadline = leader.self.tick.get()
                     + leader.self.initLimit + leader.self.syncLimit;
 
@@ -404,14 +403,13 @@ public class LearnerHandler extends ZooKeeperThread {
                 }
                 if (learnerInfoData.length >= 20) {
                     long configVersion = bbsid.getLong();
-                    //可以理解成配置的版本号
-                    //这个值是只有配置内容变了才会增加吗
+                    //什么时候会出现
                     if (configVersion > leader.self.getQuorumVerifier().getVersion()) {
                         throw new IOException("Follower is ahead of the leader (has a later activated configuration)");
                     }
                 }
             } else {
-                //这样真的好吗 每个节点本来是有分配自己的id的
+                //应该是老版本的
                 this.sid = leader.followerCounter.getAndDecrement();
             }
 
@@ -426,12 +424,12 @@ public class LearnerHandler extends ZooKeeperThread {
                   learnerType = LearnerType.OBSERVER;
             }
 
-            //peer收到的epoch
+            //这个epoch是follower在投票期间收到的epoch
             long lastAcceptedEpoch = ZxidUtils.getEpochFromZxid(qp.getZxid());
 
             long peerLastZxid;
             StateSummary ss = null;
-            //follower认为事务应该从哪开始
+            //follower认为的新的事务id
             long zxid = qp.getZxid();
             //最终稳定的的epoch
             long newEpoch = leader.getEpochToPropose(this.getSid(), lastAcceptedEpoch);
@@ -789,8 +787,9 @@ public class LearnerHandler extends ZooKeeperThread {
                 LOG.info("Sending DIFF zxid=0x" + Long.toHexString(peerLastZxid) +
                          " for peer sid: " +  getSid());
                 //diff这个包并不做什么,关键是看后面的包
+                //发个diff过去是不是为了让follower不要用同步快照
                 queueOpPacket(Leader.DIFF, peerLastZxid);
-                //不需要同步操作的意思吧
+                //设为false可以不让最后的逻辑吧needSnap改为true
                 needOpPacket = false;
                 //不需要同步快照
                 needSnap = false;
@@ -916,6 +915,7 @@ public class LearnerHandler extends ZooKeeperThread {
                     continue;
                 }
 
+                //能进入这里就说明leader没有follower最后处理的那个事务
                 if (isPeerNewEpochZxid) {
                    // Send diff and fall through if zxid is of a new-epoch
                    LOG.info("Sending DIFF zxid=0x" +
@@ -939,6 +939,7 @@ public class LearnerHandler extends ZooKeeperThread {
                     LOG.info("Sending TRUNC zxid=0x" +
                             Long.toHexString(prevProposalZxid) +
                             " for peer sid: " + getSid());
+                    //这个不会出问题吗,本来follower是有一个事务的,在这个逻辑相当于被回滚了,那客户端怎么感知到呢
                     queueOpPacket(Leader.TRUNC, prevProposalZxid);
                     needOpPacket = false;
                 }
@@ -960,7 +961,7 @@ public class LearnerHandler extends ZooKeeperThread {
 
         if (needOpPacket && isPeerNewEpochZxid) {
             // We will send DIFF for this kind of zxid in any case. This if-block
-            // is the catch when our history older than learner and there is
+                // is the catch when our history older than learner and there is
             // no new txn since then. So we need an empty diff
             LOG.info("Sending DIFF zxid=0x" +
                      Long.toHexString(lastCommittedZxid) +

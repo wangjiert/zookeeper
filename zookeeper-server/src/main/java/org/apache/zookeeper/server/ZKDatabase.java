@@ -367,6 +367,7 @@ public class ZKDatabase {
 
             if (sizeLimit > 0) {
                 long txnSize = itr.getStorageSize();
+                //日志文件的大小不能超过快照文件的0.33
                 if (txnSize > sizeLimit) {
                     LOG.info("Txnlog size: " + txnSize + " exceeds sizeLimit: "
                             + sizeLimit);

@@ -1840,7 +1840,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         }
     }
 
-    //follower连接master的时候计算出来的epoch
+    //新的epoch
     private long acceptedEpoch = -1;
     //逻辑时钟 用于判断多个投票是否在同一个周期
     private long currentEpoch = -1;
