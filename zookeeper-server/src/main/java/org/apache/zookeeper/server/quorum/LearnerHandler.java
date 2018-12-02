@@ -185,7 +185,6 @@ public class LearnerHandler extends ZooKeeperThread {
     /**
      * Last zxid sent to the learner as part of synchronization
      */
-    //发送给follower的最后一个事务id
     private long leaderLastZxid;
 
     LearnerHandler(Socket sock, BufferedInputStream bufferedInput,Leader leader) throws IOException {
@@ -430,14 +429,13 @@ public class LearnerHandler extends ZooKeeperThread {
             long peerLastZxid;
             StateSummary ss = null;
             //follower认为的新的事务id
+            //下面还会加1所以这个事务ID应该不是最新的才对
             long zxid = qp.getZxid();
             //最终稳定的的epoch
             long newEpoch = leader.getEpochToPropose(this.getSid(), lastAcceptedEpoch);
             //新的事务id
-            //follower也传了一个 应该有可能不准 所以以这个为准吗
             long newLeaderZxid = ZxidUtils.makeZxid(newEpoch, 0);
 
-            //follower传过来的
             if (this.getVersion() < 0x10000) {
                 // we are going to have to extrapolate the epoch information
                 long epoch = ZxidUtils.getEpochFromZxid(zxid);
@@ -458,13 +456,13 @@ public class LearnerHandler extends ZooKeeperThread {
                             + " is not ACKEPOCH");
                     return;
 				}
-				//这个值是follower传回来的自己的epoch
+				//这个值是回传follower收到的epoch 如果收到的和自己之前的相同就返回-1
                 ByteBuffer bbepoch = ByteBuffer.wrap(ackEpochPacket.getData());
                 ss = new StateSummary(bbepoch.getInt(), ackEpochPacket.getZxid());
                 //卡线程 等待超过一半的follower连了之后在开始后面的操作
                 leader.waitForEpochAck(this.getSid(), ss);
             }
-            //follower当前的事务id
+            //follower最后处理的事务id
             peerLastZxid = ss.getLastZxid();
 
             // Take any necessary action if we need to send TRUNC or DIFF
@@ -706,7 +704,6 @@ public class LearnerHandler extends ZooKeeperThread {
      * @param leader
      * @return true if snapshot transfer is needed.
      */
-    //第一个参数是follower最后的事务
     public boolean syncFollower(long peerLastZxid, ZKDatabase db, Leader leader) {
         /*
          * When leader election is completed, the leader will set its
@@ -786,8 +783,7 @@ public class LearnerHandler extends ZooKeeperThread {
                 // Follower is already sync with us, send empty diff
                 LOG.info("Sending DIFF zxid=0x" + Long.toHexString(peerLastZxid) +
                          " for peer sid: " +  getSid());
-                //diff这个包并不做什么,关键是看后面的包
-                //发个diff过去是不是为了让follower不要用同步快照
+                //发送diff并没有关系,只是告诉follower不实用快照,接收接下来的包然后根据具体的类型进行相应的处理
                 queueOpPacket(Leader.DIFF, peerLastZxid);
                 //设为false可以不让最后的逻辑吧needSnap改为true
                 needOpPacket = false;

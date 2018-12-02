@@ -383,8 +383,7 @@ public class Leader {
      */
     final static int INFORMANDACTIVATE = 19;
 
-    //master发给follower的proposal
-    //key是事务id
+    //leader发送的请求,但是还没有被确认
     final ConcurrentMap<Long, Proposal> outstandingProposals = new ConcurrentHashMap<Long, Proposal>();
 
     //已经被大多数peer接受的提议
@@ -495,6 +494,7 @@ public class Leader {
             self.tick.set(0);
             zk.loadData();
 
+            //以后每个follower同步的时候也会创建这个对象
             leaderStateSummary = new StateSummary(self.getCurrentEpoch(), zk.getLastProcessedZxid());
 
             // Start thread that waits for connection requests from
@@ -1207,11 +1207,15 @@ public class Leader {
      * @return last proposed zxid
      * @throws InterruptedException
      */
+    //要是发送快照的话 这些事务难道不是已经做过的吗
     synchronized public long startForwarding(LearnerHandler handler,
             long lastSeenZxid) {
         // Queue up any outstanding requests enabling the receipt of
         // new requests
         if (lastProposed > lastSeenZxid) {
+            //里面的请求就是已经被大多数follower接受的请求
+            //从这里看的话,怎么感觉同步的过程中leader有处理新的事务
+            //还是说这些事务都是有大多数follower已经和leader同步之后处理的事务呢
             for (Proposal p : toBeApplied) {
                 if (p.packet.getZxid() <= lastSeenZxid) {
                     continue;
@@ -1308,6 +1312,7 @@ public class Leader {
                 return epoch;
             }
             //选择最大epoch
+            //这里没有问题吗 只是收到大多数follower的请求,并不要求这些follower处于同一epoch
             if (lastAcceptedEpoch >= epoch) {
                 epoch = lastAcceptedEpoch+1;
             }
@@ -1351,6 +1356,7 @@ public class Leader {
                 return;
             }
             if (ss.getCurrentEpoch() != -1) {
+                //看这里是期望收到-1了
                 if (ss.isMoreRecentThan(leaderStateSummary)) {
                     throw new IOException("Follower is ahead of the leader, leader summary: "
                                                     + leaderStateSummary.getCurrentEpoch()

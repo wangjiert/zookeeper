@@ -2,4 +2,6 @@
 2.要是follower在处理一个新的请求,这时候leader奔溃了,换到另一新的leader,这个请求会被如何处理
 3.如果集群里面一个节点退出了,整个集群会发生什么
 4.如果leader收到一个不在自己的配置中的follower发送的消息,会做什么特殊处理吗
-5.
+5.在选举过程中,得出的acceptedEpoch到底有没有加1
+6.如果follower在收到leader的确认之后,后续处理中发生了异常,对集群有什么样的影响呢
+7.follower和leader同步的时候要是follower的事务id大于leader的事务ID,直接截断，难道不会影响那个客户端吗

@@ -388,7 +388,6 @@ public class Learner {
      * @throws IOException
      * @throws InterruptedException
      */
-    //和master同步数据
     //newLeaderZxid前32位是epoch 后32位是counter
     protected void syncWithLeader(long newLeaderZxid) throws Exception{
         //用于发送给master的回复
