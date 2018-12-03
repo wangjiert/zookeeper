@@ -390,7 +390,6 @@ public class Learner {
      * @throws IOException
      * @throws InterruptedException
      */
-    //好像就是新的事务id
     protected void syncWithLeader(long newLeaderZxid) throws Exception{
         QuorumPacket ack = new QuorumPacket(Leader.ACK, 0, null, null);
         QuorumPacket qp = new QuorumPacket();
