@@ -913,9 +913,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             zkDb.loadDataBase();
 
             // load the epochs
-            //之前处理的最后一个事务
             long lastProcessedZxid = zkDb.getDataTree().lastProcessedZxid;
-            //投票的代数
             long epochOfZxid = ZxidUtils.getEpochFromZxid(lastProcessedZxid);
             try {
                 currentEpoch = readLongFromFile(CURRENT_EPOCH_FILENAME);
@@ -929,6 +927,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             	        currentEpoch);
             	writeLongToFile(CURRENT_EPOCH_FILENAME, currentEpoch);
             }
+            //这里的逻辑来看,选举的时候肯定是回写了的
             if (epochOfZxid > currentEpoch) {
                 throw new IOException("The current epoch, " + ZxidUtils.zxidToString(currentEpoch) + ", is older than the last zxid, " + lastProcessedZxid);
             }
@@ -944,6 +943,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             	        acceptedEpoch);
             	writeLongToFile(ACCEPTED_EPOCH_FILENAME, acceptedEpoch);
             }
+            //这两个最后肯定会一样,不一样是怎么导致的呢
             if (acceptedEpoch < currentEpoch) {
                 throw new IOException("The accepted epoch, " + ZxidUtils.zxidToString(acceptedEpoch) + " is less than the current epoch, " + ZxidUtils.zxidToString(currentEpoch));
             }
@@ -1843,8 +1843,10 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
     //新的epoch
     private long acceptedEpoch = -1;
     //逻辑时钟 用于判断多个投票是否在同一个周期
+    //这个优先是从文件里读,如果失败了就用快照加上日志文件恢复之后的事务id获取
     private long currentEpoch = -1;
 
+    //如过选举的过程中epoch变了,会回写回来吗
     public static final String CURRENT_EPOCH_FILENAME = "currentEpoch";
 
     public static final String ACCEPTED_EPOCH_FILENAME = "acceptedEpoch";

@@ -354,6 +354,8 @@ public class Learner {
         	byte epochBytes[] = new byte[4];
         	//存的是follower本身的epoch 如果和master相等就是-1
         	final ByteBuffer wrappedEpochBytes = ByteBuffer.wrap(epochBytes);
+        	//百分百符合这个条件 其他的情况是不是之前的代码的遗留呢
+            //也有可能是集群本来就在正常工作,这个peer新加进来的时候会进入下一个条件里面呢
         	if (newEpoch > self.getAcceptedEpoch()) {
         		wrappedEpochBytes.putInt((int)self.getCurrentEpoch());
         		self.setAcceptedEpoch(newEpoch);
@@ -388,14 +390,11 @@ public class Learner {
      * @throws IOException
      * @throws InterruptedException
      */
-    //和master同步数据
-    //newLeaderZxid前32位是epoch 后32位是counter
+    //好像就是新的事务id
     protected void syncWithLeader(long newLeaderZxid) throws Exception{
-        //用于发送给master的回复
         QuorumPacket ack = new QuorumPacket(Leader.ACK, 0, null, null);
-        //从socket里面读取用的包
         QuorumPacket qp = new QuorumPacket();
-        //获取master的epoch
+        //选举时候决定的epoch而已吧
         long newEpoch = ZxidUtils.getEpochFromZxid(newLeaderZxid);
 
         //用于验证法定人数
@@ -403,7 +402,6 @@ public class Learner {
         
         // In the DIFF case we don't need to do a snapshot because the transactions will sync on top of any existing snapshot
         // For SNAP and TRUNC the snapshot is needed to save that history
-        //是否需要同步快照
         boolean snapshotNeeded = true;
         //是否已经同步了快照
         boolean syncSnapshot = false;
@@ -422,13 +420,10 @@ public class Learner {
                 LOG.info("Getting a snapshot from leader 0x" + Long.toHexString(qp.getZxid()));
                 // The leader is going to dump the database
                 // db is clear as part of deserializeSnapshot()
-                //把datatree和会话超时表更新成master传过来的
-                //还会清空之前的zkdatabase
                 zk.getZKDatabase().deserializeSnapshot(leaderIs);
                 // ZOOKEEPER-2819: overwrite config node content extracted
                 // from leader snapshot with local config, to avoid potential
                 // inconsistency of config node content during rolling restart.
-                //是否可以重读配置
                 if (!QuorumPeerConfig.isReconfigEnabled()) {
                     LOG.debug("Reset config node content from local config after deserialization of snapshot.");
                     zk.getZKDatabase().initConfigInZKDatabase(self.getQuorumVerifier());
@@ -438,11 +433,12 @@ public class Learner {
                     LOG.error("Missing signature. Got " + signature);
                     throw new IOException("Missing signature");                   
                 }
+                //这个包的事务id就是leader最后处理的事务的id
                 zk.getZKDatabase().setlastProcessedZxid(qp.getZxid());
 
                 // immediately persist the latest snapshot when there is txn log gap
                 syncSnapshot = true;
-            } else if (qp.getType() == Leader.TRUNC) { //这个应该是本地的事务多于master
+            } else if (qp.getType() == Leader.TRUNC) {
                 //we need to truncate the log to the lastzxid of the leader
                 LOG.warn("Truncating log to get in sync with the leader 0x"
                         + Long.toHexString(qp.getZxid()));
@@ -595,7 +591,7 @@ public class Learner {
                     self.setCurrentEpoch(newEpoch);
                     writeToTxnLog = true; //Anything after this needs to go to the transaction log, not applied directly in memory
                     isPreZAB1_0 = false;
-                    writePacket(new QuorumPacket(Leader.ACK, newLeaderZxid, null, null), true);
+                        writePacket(new QuorumPacket(Leader.ACK, newLeaderZxid, null, null), true);
                     break;
                 }
             }

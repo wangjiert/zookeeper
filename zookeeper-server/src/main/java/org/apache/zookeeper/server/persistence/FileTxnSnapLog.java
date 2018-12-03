@@ -215,12 +215,13 @@ public class FileTxnSnapLog {
      */
     public long restore(DataTree dt, Map<Long, Integer> sessions,
                         PlayBackListener listener) throws IOException {
-        //返回快照文件名里面的事务id
-        //第一次启动返回-1
+        //返回快照文件名里面的事务id,快照不存在返回-1
+        //找到了快照但是没有找到合法的就会抛出异常
         long deserializeResult = snapLog.deserialize(dt, sessions);
         FileTxnLog txnLog = new FileTxnLog(dataDir);
         boolean trustEmptyDB;
         File initFile = new File(dataDir.getParent(), "initialize");
+        //只有删除没有新建呀
         if (Files.deleteIfExists(initFile.toPath())) {
             LOG.info("Initialize file found, an empty database will not block voting participation");
             trustEmptyDB = true;

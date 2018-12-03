@@ -71,6 +71,7 @@ public class Leader {
 
     static public class Proposal  extends SyncedLearnerTracker {
         public QuorumPacket packet;
+        //这个东西加进来是不是为了保留和客户端的连接对象
         public Request request;
 
         @Override

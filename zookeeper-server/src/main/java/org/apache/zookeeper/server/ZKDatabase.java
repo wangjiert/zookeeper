@@ -82,14 +82,17 @@ public class ZKDatabase {
      */
     public static final String SNAPSHOT_SIZE_FACTOR = "zookeeper.snapshotSizeFactor";
     public static final double DEFAULT_SNAPSHOT_SIZE_FACTOR = 0.33;
+    //同步的时候,需要同步的日志的大小占快照的百分比
+    //一个快照很大吗,等于1都不行
     private double snapshotSizeFactor;
 
+    //缓存多少个提交的事务
     public static final int commitLogCount = 500;
     protected static int commitLogBuffer = 700;
-    //不知道是啥 反正是master传过来的
+    //缓存提交的事务,在同步的时候会用到
     protected LinkedList<Proposal> committedLog = new LinkedList<Proposal>();
     protected ReentrantReadWriteLock logLock = new ReentrantReadWriteLock();
-    //标志是否已经初始化了
+    //把磁盘的数据加载到内存之后才会设为true
     volatile private boolean initialized = false;
 
     /**
@@ -240,6 +243,7 @@ public class ZKDatabase {
         return sessionsWithTimeouts;
     }
 
+    //就是把磁盘的事务序列化到内存之后,存到集合里面
     private final PlayBackListener commitProposalPlaybackListener = new PlayBackListener() {
         public void onTxnLoaded(TxnHeader hdr, Record txn){
             addCommittedProposal(hdr, txn);
@@ -276,6 +280,7 @@ public class ZKDatabase {
     }
 
     private void addCommittedProposal(TxnHeader hdr, Record txn) {
+        //既然会话id没什么用 那要xid干嘛呢
         Request r = new Request(0, hdr.getCxid(), hdr.getType(), hdr, txn, hdr.getZxid());
         addCommittedProposal(r);
     }

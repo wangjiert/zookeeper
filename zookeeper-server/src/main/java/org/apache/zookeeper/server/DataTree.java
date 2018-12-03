@@ -833,6 +833,7 @@ public class DataTree {
     }
 
     //目前看到是恢复快照之后立马会把这个值赋值成文件名里面的事务id
+    //是不是所有判断最后处理的事务的id都是用这个变量
     public volatile long lastProcessedZxid = 0;
 
     public ProcessTxnResult processTxn(TxnHeader header, Record txn) {

@@ -74,7 +74,6 @@ public class FileSnap implements SnapShot {
         // we run through 100 snapshots (not all of them)
         // if we cannot get it running within 100 snapshots
         // we should  give up
-        //倒叙的文件
         List<File> snapList = findNValidSnapshots(100);
         if (snapList.size() == 0) {
             return -1L;
@@ -151,7 +150,6 @@ public class FileSnap implements SnapShot {
      * @throws IOException
      */
     private List<File> findNValidSnapshots(int n) throws IOException {
-        //所有文件名按事务顺序倒序排列
         List<File> files = Util.sortDataDir(snapDir.listFiles(), SNAPSHOT_FILE_PREFIX, false);
         int count = 0;
         List<File> list = new ArrayList<File>();

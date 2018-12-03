@@ -434,7 +434,6 @@ public class LearnerHandler extends ZooKeeperThread {
             //最终稳定的的epoch
             long newEpoch = leader.getEpochToPropose(this.getSid(), lastAcceptedEpoch);
             //新的事务id
-            //follower也传了一个 应该有可能不准 所以以这个为准吗
             long newLeaderZxid = ZxidUtils.makeZxid(newEpoch, 0);
 
             //follower传过来的
