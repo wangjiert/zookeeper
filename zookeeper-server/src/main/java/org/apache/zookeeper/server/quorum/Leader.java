@@ -1356,8 +1356,9 @@ public class Leader {
             if (electionFinished) {
                 return;
             }
+            //这个是正常的逻辑
             if (ss.getCurrentEpoch() != -1) {
-                //看这里是期望收到-1了
+                //难道不可能吗 如果这个follower是以前的leader并且领先现在选举的follower
                 if (ss.isMoreRecentThan(leaderStateSummary)) {
                     throw new IOException("Follower is ahead of the leader, leader summary: "
                                                     + leaderStateSummary.getCurrentEpoch()

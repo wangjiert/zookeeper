@@ -8,3 +8,5 @@
 8.在选举过程中,得出的acceptedEpoch到底有没有加1
 9.如果follower在收到leader的确认之后,后续处理中发生了异常,对集群有什么样的影响呢
 10.follower和leader同步的时候要是follower的事务id大于leader的事务ID,直接截断，难道不会影响那个客户端吗
+11.如果集群在正常运行,有新的peer进来了,这个peer的配置版本高于leader会发生什么
+12.节点处理请求的时候是什么时候增加事务id的呢

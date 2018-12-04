@@ -374,7 +374,7 @@ public class LearnerHandler extends ZooKeeperThread {
     public void run() {
         try {
             leader.addLearnerHandler(this);
-            //加上等待消息的tick和同步的tick以及上次的tick 干嘛
+            //好像很有道理 同步时间加上收到回复的时间就是收到确认的超时时间
             tickOfNextAckDeadline = leader.self.tick.get()
                     + leader.self.initLimit + leader.self.syncLimit;
 
@@ -402,7 +402,7 @@ public class LearnerHandler extends ZooKeeperThread {
                 }
                 if (learnerInfoData.length >= 20) {
                     long configVersion = bbsid.getLong();
-                    //什么时候会出现
+                    //好像确实不会出现 选举的时候会更新配置的
                     if (configVersion > leader.self.getQuorumVerifier().getVersion()) {
                         throw new IOException("Follower is ahead of the leader (has a later activated configuration)");
                     }
@@ -428,8 +428,7 @@ public class LearnerHandler extends ZooKeeperThread {
 
             long peerLastZxid;
             StateSummary ss = null;
-            //follower认为的新的事务id
-            //下面还会加1所以这个事务ID应该不是最新的才对
+            //这个事务有什么用
             long zxid = qp.getZxid();
             //最终稳定的的epoch
             long newEpoch = leader.getEpochToPropose(this.getSid(), lastAcceptedEpoch);
@@ -456,8 +455,9 @@ public class LearnerHandler extends ZooKeeperThread {
                             + " is not ACKEPOCH");
                     return;
 				}
-				//这个值是回传follower收到的epoch 如果收到的和自己之前的相同就返回-1
+				//这个值是回传follower的当前epoch 如果收到的epoch和自己的accept epoch相同就返回-1
                 ByteBuffer bbepoch = ByteBuffer.wrap(ackEpochPacket.getData());
+                //这个事务是follower最后处理的事务id
                 ss = new StateSummary(bbepoch.getInt(), ackEpochPacket.getZxid());
                 //卡线程 等待超过一半的follower连了之后在开始后面的操作
                 leader.waitForEpochAck(this.getSid(), ss);
@@ -467,7 +467,6 @@ public class LearnerHandler extends ZooKeeperThread {
 
             // Take any necessary action if we need to send TRUNC or DIFF
             // startForwarding() will be called in all cases
-            //所以选举的时候是不会变自己的最后处理的事务的记录的
             boolean needSnap = syncFollower(peerLastZxid, leader.zk.getZKDatabase(), leader);
 
             /* if we are not truncating or sending a diff just send a snapshot */
