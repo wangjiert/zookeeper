@@ -201,6 +201,7 @@ public abstract class ServerCnxnFactory {
      * @throws IOException if jaas.conf is missing or there's an error in it.
      */
     protected void configureSaslLogin() throws IOException {
+        //这个配置的是给客户端连接用的
         String serverSection = System.getProperty(ZooKeeperSaslServer.LOGIN_CONTEXT_NAME_KEY,
                                                   ZooKeeperSaslServer.DEFAULT_LOGIN_CONTEXT_NAME);
 

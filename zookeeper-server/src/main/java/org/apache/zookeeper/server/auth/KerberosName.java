@@ -51,6 +51,7 @@ public class KerberosName {
   /**
    * A pattern that matches a Kerberos name with at most 2 components.
    */
+  //格式就是 service/user@realm
   private static final Pattern nameParser = 
     Pattern.compile("([^/@]*)(/([^/@]*))?@([^/@]*)");
 
@@ -64,6 +65,7 @@ public class KerberosName {
   /**
    * A pattern for parsing a auth_to_local rule.
    */
+  // RULE:[数字*:非]的任意字符*](非)的任意字符)?s/非/的任意字符*/非/的任意字符/g
   private static final Pattern ruleParser =
     Pattern.compile("\\s*((DEFAULT)|(RULE:\\[(\\d*):([^\\]]*)](\\(([^)]*)\\))?"+
                     "(s/([^/]*)/([^/]*)/(g)?)?))");
@@ -178,12 +180,15 @@ public class KerberosName {
    * An encoding of a rule for translating kerberos names.
    */
   private static class Rule {
+    //是否是默认规则
     private final boolean isDefault;
     private final int numOfComponents;
     private final String format;
     private final Pattern match;
+    //把fromPattern替换成toPattern
     private final Pattern fromPattern;
     private final String toPattern;
+    //是否替换全部
     private final boolean repeat;
 
     Rule() {
@@ -337,6 +342,7 @@ public class KerberosName {
       if (matcher.group(2) != null) {
         result.add(new Rule());
       } else {
+        //"\\s*(1(2DEFAULT)|(3RULE:\\[(4\\d*):(5[^\\]]*)](6\\((7[^)]*)\\))?(8s/(9[^/]*)/(10[^/]*)/(11g)?)?))"
         result.add(new Rule(Integer.parseInt(matcher.group(4)),
                             matcher.group(5),
                             matcher.group(7),

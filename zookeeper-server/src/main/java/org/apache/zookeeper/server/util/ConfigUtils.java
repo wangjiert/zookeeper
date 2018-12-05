@@ -88,6 +88,8 @@ public class ConfigUtils {
                System.arraycopy(sa, 0, nsa, 1, sa.length);
                return nsa;
             }
+            //这个返回之后会报错,为什么不直接在这里报错算了
+            //还是说这个方法是为了兼容其他地方允许只有一个返回值的调用
             return new String[] {s.replaceAll("\\[|\\]", "")};
         } else {
             return s.split(":");

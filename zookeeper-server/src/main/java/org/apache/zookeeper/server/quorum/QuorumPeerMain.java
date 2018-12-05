@@ -107,7 +107,6 @@ public class QuorumPeerMain {
             System.exit(ExitCode.UNEXPECTED_ERROR.getValue());
         }
         LOG.info("Exiting normally");
-        //系统正常退出
         System.exit(ExitCode.EXECUTION_FINISHED.getValue());
     }
 

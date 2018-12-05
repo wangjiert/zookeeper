@@ -74,6 +74,7 @@ public class PurgeTxnLog {
      */
     public static void purge(File dataDir, File snapDir, int num) throws IOException {
         if (num < 3) {
+            //这里的检查是针对命令直接调用
             throw new IllegalArgumentException(COUNT_ERR_MSG);
         }
 

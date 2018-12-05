@@ -110,6 +110,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
     public final static Exception ok = new Exception("No prob");
     protected RequestProcessor firstProcessor;
     //会被listener设置为错误
+    //listener修改这个会导致无法处理客户端的请求
     protected volatile State state = State.INITIAL;
 
     protected enum State {

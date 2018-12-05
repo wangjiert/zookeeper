@@ -110,6 +110,7 @@ public class SaslServerCallbackHandler implements CallbackHandler {
         }
     }
 
+    //处理域名
     private void handleRealmCallback(RealmCallback rc) {
         LOG.debug("client supplied realm: " + rc.getDefaultText());
         rc.setText(rc.getDefaultText());
@@ -126,6 +127,7 @@ public class SaslServerCallbackHandler implements CallbackHandler {
         // canonicalize authorization id according to system properties:
         // zookeeper.kerberos.removeRealmFromPrincipal(={true,false})
         // zookeeper.kerberos.removeHostFromPrincipal(={true,false})
+        //认证id是否是全格式的呢 还是只包括了用户名而已
         KerberosName kerberosName = new KerberosName(authenticationID);
         try {
             StringBuilder userNameBuilder = new StringBuilder(kerberosName.getShortName());

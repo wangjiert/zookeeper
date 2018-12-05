@@ -64,7 +64,7 @@ public class QuorumPeerConfig {
     private static final int UNSET_SERVERID = -1;
     public static final String nextDynamicConfigFileSuffix = ".dynamic.next";
 
-    //是否允许单例模式 什么鬼
+    //是否允许单例模式
     private static boolean standaloneEnabled = true;
     //是否能通过集群内部的交流改变从配置文件读取的信息
     private static boolean reconfigEnabled = false;
@@ -72,11 +72,11 @@ public class QuorumPeerConfig {
     //等待客户端连接的地址
     //如果没有配置client连接的端口和地址这个属性就为null
     //如果动态配置了会被强制覆盖
-    //为空会怎样呢 只是会随意监听一个端口而已
+    //为空会随意监听一个端口而已
     protected InetSocketAddress clientPortAddress;
     //也有可能是null
     protected InetSocketAddress secureClientPortAddress;
-    //有点像https相关的
+    //表示这个peer在集群内部通信时是否使用ssl的socket
     protected boolean sslQuorum = false;
     //现在还不能用 到底是干什么的呢
     protected boolean shouldUsePortUnification = false;
@@ -90,7 +90,7 @@ public class QuorumPeerConfig {
     protected String configFileStr = null;
     //一次tick等于多少毫秒
     protected int tickTime = ZooKeeperServer.DEFAULT_TICK_TIME;
-    //一个peer最多允许的客户端连接数
+    //一个ip和一个peer最多可以建立多少个连接
     protected int maxClientCnxns = 60;
     /** defaults to -1 if not set explicitly */
     //最小的超时时间
@@ -103,14 +103,14 @@ public class QuorumPeerConfig {
     protected String metricsProviderClassName = NullMetricsProvider.class.getName();
     //针对上面的对象的配置
     protected Properties metricsProviderConfiguration = new Properties();
-    //是否允许follower自己创建session吗
+    //用于控制新建的会话是否是本地会话,本地会话好像不会创给其他peer的,相当于只读,如果存在改变集群状态的请求就会升级会全局会话
     protected boolean localSessionsEnabled = false;
-    //同上
+    //是否允许本地会话升级为全局会话
     protected boolean localSessionsUpgradingEnabled = false;
 
     //和master同步等待的tick个数
     protected int initLimit;
-    //follower等待master的包的tick个数
+    //follower等待master回复的tick个数
     protected int syncLimit;
     //选举master的算法
     protected int electionAlg = 3;
@@ -123,10 +123,10 @@ public class QuorumPeerConfig {
     //如果是分布式的并且sid为空会抛出异常
     protected long serverId = UNSET_SERVERID;
 
-    protected QuorumVerifier quorumVerifier = null, lastSeenQuorumVerifier = null;
+    protected QuorumVerifier quorumVerifier = null, lastSeenQuorumVerifier = null;//根据文件名判断这个是否存在
     //每次清理文件时候,保留多少个快照文件
     protected int snapRetainCount = 3;
-    //清理的周期
+    //清理的周期 表示几个消息清理一次
     protected int purgeInterval = 0;
     //针对观察者的 是否允许同步处理器
     //如果不允许的话 针对master的inform观察者只会把数据写到内存 不会同步到日志文件以及拍快照
@@ -138,14 +138,19 @@ public class QuorumPeerConfig {
     /**
      * Configurations for the quorumpeer-to-quorumpeer sasl authentication
      */
+    //接受连接的时候是否允许不带sasl的peer的连接
     protected boolean quorumServerRequireSasl = false;
+    //连接peer的时候是否使用sasl
     protected boolean quorumLearnerRequireSasl = false;
-    //授权认证相关
+    //是否允许使用sasl来认证
     protected boolean quorumEnableSasl = false;
+    //kerberos的用户名
     protected String quorumServicePrincipal = QuorumAuth.QUORUM_KERBEROS_SERVICE_PRINCIPAL_DEFAULT_VALUE;
+    //jaas的配置名
     protected String quorumLearnerLoginContext = QuorumAuth.QUORUM_LEARNER_SASL_LOGIN_CONTEXT_DFAULT_VALUE;
+    //jaas的配置名
     protected String quorumServerLoginContext = QuorumAuth.QUORUM_SERVER_SASL_LOGIN_CONTEXT_DFAULT_VALUE;
-    //处理集群内部的连接的线程数量吧
+    //选举的时候线程池的大小
     protected int quorumCnxnThreadsSize;
 
     /**
@@ -169,13 +174,10 @@ public class QuorumPeerConfig {
      * @param path the patch of the configuration file
      * @throws ConfigException error processing configuration
      */
-    //文件不存在以及文件格式不对 都是抛出ConfigException
     public void parse(String path) throws ConfigException {
         LOG.info("Reading configuration from: " + path);
        
         try {
-            //如果文件不存在会抛出IllegalArgumentException
-            //如果文件是相对路径并且不是./开头就打印logger日志
             File configFile = (new VerifyingFileFactory.Builder(LOG)
                 .warnForRelativePath()
                 .failForNonExistingPath()
@@ -224,7 +226,8 @@ public class QuorumPeerConfig {
                throw new ConfigException("Error processing " + dynamicConfigFileStr, e);
            } catch (IllegalArgumentException e) {
                throw new ConfigException("Error processing " + dynamicConfigFileStr, e);
-           }        
+           }
+           //这个文件像是自己生成的
            File nextDynamicConfigFile = new File(configFileStr + nextDynamicConfigFileSuffix);
            if (nextDynamicConfigFile.exists()) {
                try {           
@@ -283,7 +286,7 @@ public class QuorumPeerConfig {
         //用于监听客户端连接的端口
         int clientPort = 0;
         int secureClientPort = 0;
-        //这个地址是否带端口呢 不带
+        //不带端口的地址
         String clientPortAddress = null;
         String secureClientPortAddress = null;
         VerifyingFileFactory vff = new VerifyingFileFactory.Builder(LOG).warnForRelativePath().build();
@@ -481,6 +484,7 @@ public class QuorumPeerConfig {
         // backward compatibility - dynamic configuration in the same file as
         // static configuration params see writeDynamicConfig()
         if (dynamicConfigFileStr == null) {
+            //这种情况创建的queerverify版本号肯定为0
             setupQuorumPeerConfig(zkProp, true);
             if (isDistributed() && isReconfigEnabled()) {
                 // we don't backup static config for standalone mode.
@@ -738,7 +742,6 @@ public class QuorumPeerConfig {
     private void setupMyId() throws IOException {
         File myIdFile = new File(dataDir, "myid");
         // standalone server doesn't need myid file.
-        //文件不存在会返回false
         if (!myIdFile.isFile()) {
             return;
         }
@@ -759,6 +762,7 @@ public class QuorumPeerConfig {
     }
 
     private void setupClientPort() throws ConfigException {
+        //id文件不存在的情况
         if (serverId == UNSET_SERVERID) {
             return;
         }
