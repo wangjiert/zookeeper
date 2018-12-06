@@ -615,7 +615,8 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
     private final ConcurrentHashMap<InetAddress, Set<NIOServerCnxn>> ipMap =
         new ConcurrentHashMap<InetAddress, Set<NIOServerCnxn>>( );
 
-    //最大的客户端连接数
+    //一个客户端最大的客户端连接数
+    //不需要默认值呀 反正肯定被覆盖
     protected int maxClientCnxns = 60;
 
     //什么意思
@@ -651,7 +652,6 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
         if (secure) {
             throw new UnsupportedOperationException("SSL isn't supported in NIOServerCnxn");
         }
-        //还是不太懂
         configureSaslLogin();
 
         maxClientCnxns = maxcc;

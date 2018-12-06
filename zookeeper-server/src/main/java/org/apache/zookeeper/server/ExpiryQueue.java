@@ -57,7 +57,7 @@ public class ExpiryQueue<E> {
     }
 
     //这个方法就是保证超时时间一定是tick time的整倍数
-    private long roundToNextInterval(long time) {
+    private long  roundToNextInterval(long time) {
         return (time / expirationInterval + 1) * expirationInterval;
     }
 

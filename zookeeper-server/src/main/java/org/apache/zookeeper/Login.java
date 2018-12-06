@@ -71,6 +71,7 @@ public class Login {
     //是否使用kerberos
     private boolean isKrbTicket = false;
     //是否使用缓存 在哪里用呢
+    //这个是表示使用系统缓存的ticket吗
     private boolean isUsingTicketCache = false;
 
     /** Random number generator */
@@ -110,6 +111,7 @@ public class Login {
         this.loginContextName = loginContextName;
         subject = login.getSubject();
         //这个里面放的就是kerberos的ticket
+        //tgt
         isKrbTicket = !subject.getPrivateCredentials(KerberosTicket.class).isEmpty();
         AppConfigurationEntry entries[] = Configuration.getConfiguration().getAppConfigurationEntry(loginContextName);
         for (AppConfigurationEntry entry: entries) {
@@ -129,6 +131,7 @@ public class Login {
 
         if (!isKrbTicket) {
             // if no TGT, do not bother with ticket management.
+            //没什么问题吗这样
             return;
         }
 

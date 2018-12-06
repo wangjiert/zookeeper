@@ -182,6 +182,7 @@ public class KerberosName {
   private static class Rule {
     //是否是默认规则
     private final boolean isDefault;
+    //用于限制参数的个数
     private final int numOfComponents;
     private final String format;
     private final Pattern match;
