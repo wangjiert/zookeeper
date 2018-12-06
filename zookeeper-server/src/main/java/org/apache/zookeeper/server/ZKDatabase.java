@@ -92,7 +92,7 @@ public class ZKDatabase {
     //缓存提交的事务,在同步的时候会用到
     protected LinkedList<Proposal> committedLog = new LinkedList<Proposal>();
     protected ReentrantReadWriteLock logLock = new ReentrantReadWriteLock();
-    //把磁盘的数据加载到内存之后才会设为true
+    //加载之后设为true
     volatile private boolean initialized = false;
 
     /**

@@ -759,6 +759,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             QuorumServer qs = qv.getAllMembers().get(id);
             if (qs != null) {
                 qs.recreateSocketAddresses();
+                //为什么lastSeenQuorun没有这个操作呢:因为自己的id肯定同时出现在两个里面 所以一个有这个操作就够了
                 if (id == getId()) {
                     setQuorumAddress(qs.addr);
                     setElectionAddress(qs.electionAddr);
