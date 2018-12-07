@@ -129,7 +129,7 @@ public class QuorumCnxManager {
     final int socketTimeout;
     final Map<Long, QuorumPeer.QuorumServer> view;
     final boolean listenOnAllIPs;
-    //线程池有用过吗
+    //sasl用的
     private ThreadPoolExecutor connectionExecutor;
     //已经连接的sid
     private final Set<Long> inprogressConnections = Collections
@@ -140,6 +140,7 @@ public class QuorumCnxManager {
     /*
      * Counter to count connection processing threads.
      */
+    //sasl连接时,有多少个连接正在处理
     private AtomicInteger connectionThreadCnt = new AtomicInteger(0);
 
     /*

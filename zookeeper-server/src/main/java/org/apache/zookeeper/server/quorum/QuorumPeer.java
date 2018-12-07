@@ -489,6 +489,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         this.myid = id;
     }
 
+    //集群之间选举使用ssl
     private boolean sslQuorum;
     private boolean shouldUsePortUnification;
 
