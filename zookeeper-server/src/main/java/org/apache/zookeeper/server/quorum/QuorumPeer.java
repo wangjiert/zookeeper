@@ -1904,6 +1904,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             return false;
         }
 
+        //下一步可能会改变这个值,所以这里先存一下
         InetSocketAddress oldClientAddr = getClientAddress();
 
         // update last committed quorum verifier, write the new config to disk

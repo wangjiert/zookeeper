@@ -305,6 +305,8 @@ public class FastLeaderElection implements Election {
                                         if (self.getPeerState() == ServerState.LOOKING) {
                                             LOG.debug("Invoking processReconfig(), state: {}", self.getServerState());
                                             self.processReconfig(rqv, null, null, false);
+                                            //这个判断的必要性是什么
+                                            //版本号不等也可以相等
                                             if (!rqv.equals(curQV)) {
                                                 LOG.info("restarting leader election");
                                                 self.shuttingDownLE = true;
@@ -417,11 +419,13 @@ public class FastLeaderElection implements Election {
                                  */
                                 Vote current = self.getCurrentVote();
                                 if(ackstate == QuorumPeer.ServerState.LOOKING){
+                                    //这个peer就是leader
                                     if (self.leader != null) {
                                         if (leadingVoteSet != null) {
                                             self.leader.setLeadingVoteSet(leadingVoteSet);
                                             leadingVoteSet = null;
                                         }
+                                        //相当于刚选举完又有新的进来了
                                         self.leader.reportLookingSid(response.sid);
                                     }
                                     if(LOG.isDebugEnabled()){

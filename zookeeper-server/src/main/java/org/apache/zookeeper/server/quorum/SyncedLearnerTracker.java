@@ -44,6 +44,7 @@ public class SyncedLearnerTracker {
         return change;
     }
 
+    //每个集合里面都有这个sid才返回true否则返回false
     public boolean hasSid(long sid) {
         for (QuorumVerifierAcksetPair qvAckset : qvAcksetPairs) {
             if (!qvAckset.getQuorumVerifier().getVotingMembers().containsKey(sid)) {

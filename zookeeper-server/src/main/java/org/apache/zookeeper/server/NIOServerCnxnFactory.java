@@ -185,6 +185,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
         private final RateLogger acceptErrorLogger = new RateLogger(LOG);
         private final Collection<SelectorThread> selectorThreads;
         private Iterator<SelectorThread> selectorIterator;
+        //新的配置改变了客户端监听地址时,重新设置serversocket的时候会设为true
         private volatile boolean reconfiguring = false;
         
         public AcceptThread(ServerSocketChannel ss, InetSocketAddress addr,

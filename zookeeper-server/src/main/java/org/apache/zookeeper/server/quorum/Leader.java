@@ -1292,6 +1292,9 @@ public class Leader {
         this.voteSet = voteSet;
     }
 
+    //sid是收到的消息来源的sid
+    //唤醒等待的线程
+    //进入这里只是说明leader确认了 leader和follower之间的同步还没进行完
     public void reportLookingSid(long sid) {
         if (maxTimeToWaitForEpoch < 0 || timeStartWaitForEpoch < 0
                 || !waitingForNewEpoch) {
