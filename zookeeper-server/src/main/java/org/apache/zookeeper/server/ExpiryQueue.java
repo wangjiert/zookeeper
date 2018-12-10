@@ -56,7 +56,7 @@ public class ExpiryQueue<E> {
         nextExpirationTime.set(roundToNextInterval(Time.currentElapsedTime()));
     }
 
-    //这个方法就是保证超时时间一定是tick time的整倍数
+    //这个方法就是保证超时时间一定是超时时间的整倍数
     private long  roundToNextInterval(long time) {
         return (time / expirationInterval + 1) * expirationInterval;
     }

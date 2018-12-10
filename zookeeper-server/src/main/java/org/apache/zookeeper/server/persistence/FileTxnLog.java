@@ -132,6 +132,7 @@ public class FileTxnLog implements TxnLog {
     private FilePadding filePadding = new FilePadding();
 
     //引用的zookeeper server的对象
+    //用于统计
     private ServerStats serverStats;
 
     private volatile long syncElapsedMS = -1L;

@@ -330,8 +330,6 @@ public class Learner {
         QuorumPacket qp = new QuorumPacket();
         //followerinfo
         qp.setType(pktType);
-        //新的事务应该从哪开始
-        //有可能不准确这个
         qp.setZxid(ZxidUtils.makeZxid(self.getAcceptedEpoch(), 0));
         
         /*

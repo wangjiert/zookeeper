@@ -103,6 +103,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
     protected int maxSessionTimeout = -1;
     //目前leader和follower的看到了 observer应该就是默认的
     protected SessionTracker sessionTracker;
+    //线面两个东西为什么要分开呢 明明zkDb里面就包含了txnLogFactory
     private FileTxnSnapLog txnLogFactory = null;
     private ZKDatabase zkDb;
     //应该就是全局的事务标示吧
