@@ -409,6 +409,7 @@ public class LearnerHandler extends ZooKeeperThread {
                 }
             } else {
                 //应该是老版本的
+                //看来负数表示是leader自己分配的sid
                 this.sid = leader.followerCounter.getAndDecrement();
             }
 
@@ -423,7 +424,7 @@ public class LearnerHandler extends ZooKeeperThread {
                   learnerType = LearnerType.OBSERVER;
             }
 
-            //这个epoch是follower在投票期间收到的epoch
+            //就是follower的accepted epoch
             long lastAcceptedEpoch = ZxidUtils.getEpochFromZxid(qp.getZxid());
 
             long peerLastZxid;

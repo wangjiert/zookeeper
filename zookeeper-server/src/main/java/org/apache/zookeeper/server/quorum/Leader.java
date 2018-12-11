@@ -1252,6 +1252,7 @@ public class Leader {
     //key是sid
     protected final Set<Long> connectingFollowers = new HashSet<Long>();
 
+    //这个是什么时候会变
     private volatile boolean quitWaitForEpoch = false;
     private volatile long timeStartWaitForEpoch = -1;
     private volatile SyncedLearnerTracker voteSet;
