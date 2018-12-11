@@ -508,6 +508,7 @@ public class Leader {
             //最开始是在等待超过一般的follower连接自己好确定新的事务起始值
             long epoch = getEpochToPropose(self.getId(), self.getAcceptedEpoch());
 
+            //新的选举完成之后并没有改变最后一次处理的事务id
             zk.setZxid(ZxidUtils.makeZxid(epoch, 0));
 
             synchronized(this){
