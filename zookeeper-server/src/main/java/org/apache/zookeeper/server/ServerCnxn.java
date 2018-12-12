@@ -67,6 +67,7 @@ public abstract class ServerCnxn implements Stats, Watcher {
     //哇哦 原来最后面的一个字节是新版才会支持的
     boolean isOldClient = true;
 
+    //表示要退出了
     private volatile boolean stale = false;
 
     abstract int getSessionTimeout();

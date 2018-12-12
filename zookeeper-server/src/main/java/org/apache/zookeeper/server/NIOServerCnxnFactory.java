@@ -158,6 +158,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
             }
         }
 
+        //就是让系统立即关闭socket,直接丢掉缓冲里面的数据
         protected void fastCloseSock(SocketChannel sc) {
             if (sc != null) {
                 try {
@@ -185,7 +186,8 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
         private final RateLogger acceptErrorLogger = new RateLogger(LOG);
         private final Collection<SelectorThread> selectorThreads;
         private Iterator<SelectorThread> selectorIterator;
-        //新的配置改变了客户端监听地址时,重新设置serversocket的时候会设为true
+        //标识是否是由于配置导致的重启
+        //关闭这个线程的时候会根据这个属性决定是否需要close cnxnfactory
         private volatile boolean reconfiguring = false;
         
         public AcceptThread(ServerSocketChannel ss, InetSocketAddress addr,
@@ -231,6 +233,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
 
                 Iterator<SelectionKey> selectedKeys =
                     selector.selectedKeys().iterator();
+                //只注册了一个key而已,所以这个应该也只有一个返回值而已吧
                 while (!stopped && selectedKeys.hasNext()) {
                     SelectionKey key = selectedKeys.next();
                     selectedKeys.remove();
@@ -611,8 +614,6 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
     private final ConcurrentHashMap<Long, NIOServerCnxn> sessionMap =
         new ConcurrentHashMap<Long, NIOServerCnxn>();
     // ipMap is used to limit connections per IP
-    //每个ip上所有的连接
-    //key是client的地址
     private final ConcurrentHashMap<InetAddress, Set<NIOServerCnxn>> ipMap =
         new ConcurrentHashMap<InetAddress, Set<NIOServerCnxn>>( );
 
@@ -642,6 +643,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
     }
 
     //start的时候会变为false
+    //好像几个线程都是用的这个变量判断是否继续
     private volatile boolean stopped = true;
     private ConnectionExpirerThread expirerThread;
     private AcceptThread acceptThread;

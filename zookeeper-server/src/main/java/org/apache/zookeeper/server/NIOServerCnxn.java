@@ -652,6 +652,7 @@ public class NIOServerCnxn extends ServerCnxn {
     /**
      * Close resources associated with a sock.
      */
+    //分开关闭只是单纯的想打印错误日志吗
     public static void closeSock(SocketChannel sock) {
         if (sock.isOpen() == false) {
             return;

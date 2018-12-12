@@ -56,6 +56,7 @@ public class LearnerSessionTracker extends UpgradeableSessionTracker {
     private final AtomicReference<Map<Long, Integer>> touchTable =
         new AtomicReference<Map<Long, Integer>>();
     private final long serverId;
+    //好像是这个管理会话id的分配
     private final AtomicLong nextSessionId = new AtomicLong();
 
     private final ConcurrentMap<Long, Integer> globalSessionsWithTimeouts;

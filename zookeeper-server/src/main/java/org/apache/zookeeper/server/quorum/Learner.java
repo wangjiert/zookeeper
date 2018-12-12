@@ -392,7 +392,7 @@ public class Learner {
     protected void syncWithLeader(long newLeaderZxid) throws Exception{
         QuorumPacket ack = new QuorumPacket(Leader.ACK, 0, null, null);
         QuorumPacket qp = new QuorumPacket();
-        //选举时候决定的epoch而已吧
+        //leader算出来的epoch
         long newEpoch = ZxidUtils.getEpochFromZxid(newLeaderZxid);
 
         //用于验证法定人数
@@ -401,15 +401,12 @@ public class Learner {
         // In the DIFF case we don't need to do a snapshot because the transactions will sync on top of any existing snapshot
         // For SNAP and TRUNC the snapshot is needed to save that history
         boolean snapshotNeeded = true;
-        //是否已经同步了快照
+        //是否同步快照文件
         boolean syncSnapshot = false;
-        //把socket里面的数据读到QuorumPacket里面
         readPacket(qp);
         LinkedList<Long> packetsCommitted = new LinkedList<Long>();
-        //没有提交的数据
         LinkedList<PacketInFlight> packetsNotCommitted = new LinkedList<PacketInFlight>();
         synchronized (zk) {
-            //master和follow差异很小不需要用快照进行同步
             if (qp.getType() == Leader.DIFF) {
                 LOG.info("Getting a diff from the leader 0x{}", Long.toHexString(qp.getZxid()));
                 snapshotNeeded = false;
@@ -422,6 +419,7 @@ public class Learner {
                 // ZOOKEEPER-2819: overwrite config node content extracted
                 // from leader snapshot with local config, to avoid potential
                 // inconsistency of config node content during rolling restart.
+                //滚动重启是什么意思
                 if (!QuorumPeerConfig.isReconfigEnabled()) {
                     LOG.debug("Reset config node content from local config after deserialization of snapshot.");
                     zk.getZKDatabase().initConfigInZKDatabase(self.getQuorumVerifier());
@@ -431,7 +429,6 @@ public class Learner {
                     LOG.error("Missing signature. Got " + signature);
                     throw new IOException("Missing signature");                   
                 }
-                //这个包的事务id就是leader最后处理的事务的id
                 zk.getZKDatabase().setlastProcessedZxid(qp.getZxid());
 
                 // immediately persist the latest snapshot when there is txn log gap
@@ -510,6 +507,7 @@ public class Learner {
                             LOG.warn("Committing " + qp.getZxid() + ", but next proposal is " + pif.hdr.getZxid());
                         } else {
                             zk.processTxn(pif.hdr, pif.rec);
+                            //删掉是为了后面不会加入到日志
                             packetsNotCommitted.remove();
                         }
                     } else {
