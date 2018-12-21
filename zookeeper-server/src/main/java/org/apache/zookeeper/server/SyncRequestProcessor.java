@@ -108,17 +108,14 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements
             while (true) {
                 Request si = null;
                 if (toFlush.isEmpty()) {
-                    //等待的拿
                     si = queuedRequests.take();
                 } else {
-                    //不等待的拿
                     si = queuedRequests.poll();
                     if (si == null) {
                         flush(toFlush);
                         continue;
                     }
                 }
-                //关闭服务端请求
                 if (si == requestOfDeath) {
                     break;
                 }
@@ -129,10 +126,8 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements
                         if (logCount > (snapCount / 2 + randRoll)) {
                             randRoll = r.nextInt(snapCount/2);
                             // roll the log
-                            //就是要新建文件了
                             zks.getZKDatabase().rollLog();
                             // take a snapshot
-                            //上一次的还没处理完
                             if (snapInProcess != null && snapInProcess.isAlive()) {
                                 LOG.warn("Too busy to snap, skipping");
                             } else {

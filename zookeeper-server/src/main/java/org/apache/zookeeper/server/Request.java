@@ -67,7 +67,7 @@ public class Request {
 
     public final int type;
 
-    //请求的原始数据
+    //请求数据去掉请求头部数据之后剩余的数据
     public final ByteBuffer request;
 
     //连接对应的服务端
@@ -89,6 +89,7 @@ public class Request {
     //一个定值 有什么用
     private Object owner;
 
+    //这个请求处理的过程中发生的异常
     private KeeperException e;
 
     public QuorumVerifier qv = null;

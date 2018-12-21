@@ -46,14 +46,14 @@ public class SessionTrackerImpl extends ZooKeeperCriticalThread implements
         SessionTracker {
     private static final Logger LOG = LoggerFactory.getLogger(SessionTrackerImpl.class);
 
-    //目前看来这个里面的对象根本就不会被更新 是因为会话超时时间不会变吗
     protected final ConcurrentHashMap<Long, SessionImpl> sessionsById =
         new ConcurrentHashMap<Long, SessionImpl>();
 
     //为什么它有这个东西  qurompeer的超时线程里面也有这个
     private final ExpiryQueue<SessionImpl> sessionExpiryQueue;
 
-    //引用的是zookeeper server的集合对象
+    //全局的sessiontracker引用的是zkdatabase里面的某个字段
+    //本地的sessiontracker引用的是全局sessiontracker里面的某个字段
     private final ConcurrentMap<Long, Integer> sessionsWithTimeout;
     //并不是从0开始的 所以每个peer都会自己负责自己的client的会话id分配
     private final AtomicLong nextSessionId = new AtomicLong();

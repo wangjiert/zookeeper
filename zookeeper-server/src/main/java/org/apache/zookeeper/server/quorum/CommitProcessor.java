@@ -96,12 +96,11 @@ public class CommitProcessor extends ZooKeeperCriticalThread implements
      * Requests that we are holding until commit comes in. Keys represent
      * session ids, each value is a linked list of the session's requests.
      */
-    //相当于把每个client的请求排序吗
+    //是不是用来保证客户端请求的顺序的 保证需要提交的请求之后的不需要提交的请求不会先于这个请求被执行
     protected final Map<Long, LinkedList<Request>> pendingRequests =
             new HashMap<Long, LinkedList<Request>>(10000);
 
     /** The number of requests currently being processed */
-    //正在处理的请求的个数
     protected final AtomicInteger numRequestsProcessing = new AtomicInteger(0);
 
     RequestProcessor nextProcessor;
@@ -119,7 +118,8 @@ public class CommitProcessor extends ZooKeeperCriticalThread implements
      * leader or we just let the sync operation flow through like a read. The flag will
      * be false if the CommitProcessor is in a Leader pipeline.
      */
-    //是否需要等待 为什么leader不需要等待
+    //仅仅跟sync类型请求有关
+    //表示sync请求是否需要等待leader的回复
     boolean matchSyncs;
 
     public CommitProcessor(RequestProcessor nextProcessor, String id,
@@ -167,7 +167,6 @@ public class CommitProcessor extends ZooKeeperCriticalThread implements
              * that will lead to a starvation of non-local committed requests.
              */
             int requestsToProcess = 0;
-            //是否在等待请求的提交
             boolean commitIsWaiting = false;
 			do {
                 /*
@@ -201,6 +200,7 @@ public class CommitProcessor extends ZooKeeperCriticalThread implements
                 while (!stopped && requestsToProcess > 0
                         && (request = queuedRequests.poll()) != null) {
                     requestsToProcess--;
+                    //pendingRequests这个设计非常好
                     if (needCommit(request)
                             || pendingRequests.containsKey(request.sessionId)) {
                         // Add request to pending
@@ -226,6 +226,8 @@ public class CommitProcessor extends ZooKeeperCriticalThread implements
                      * pending write or for a write originating at a different
                      * server.
                      */
+                    //是不是有问题呢, 后面的不为空不应该前面的肯定不为空吗
+                    //难道说会有什么东西是leader直接发给follower的吗
                     if (!pendingRequests.isEmpty() && !committedRequests.isEmpty()){
                         /*
                          * We set commitIsWaiting so that we won't check
@@ -238,7 +240,7 @@ public class CommitProcessor extends ZooKeeperCriticalThread implements
 
                 // Handle a single committed request
                 if (commitIsWaiting && !stopped){
-                    //等待之前的请求处理完
+                    //为什么要等待之前的完成 是怕同一个客户端的先提交的请求后处理完吗
                     waitForEmptyPool();
 
                     if (stopped){
@@ -318,6 +320,8 @@ public class CommitProcessor extends ZooKeeperCriticalThread implements
                     if (sessionQueue != null) {
                         while (!stopped && !sessionQueue.isEmpty()
                                 && !needCommit(sessionQueue.peek())) {
+                            //相当于排序只是保证了不需要提交的事务和需要提交的事务的前后顺序
+                            //不需要提交的事务之间是乱序的
                             sendToNextProcessor(sessionQueue.poll());
                         }
                         // Remove empty queues

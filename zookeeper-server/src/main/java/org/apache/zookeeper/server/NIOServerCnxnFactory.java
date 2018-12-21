@@ -621,7 +621,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
     //不需要默认值呀 反正肯定被覆盖
     protected int maxClientCnxns = 60;
 
-    //什么意思
+    //连接最开始连接的时候的默认超时时间 连接初始化之后会被传过来的超时时间覆盖
     int sessionlessCnxnTimeout;
     //处理超时线程使用的对象
     private ExpiryQueue<NIOServerCnxn> cnxnExpiryQueue;

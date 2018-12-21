@@ -156,7 +156,6 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
         LOG.info("PrepRequestProcessor exited loop!");
     }
 
-    //path是正在处理节点的父级
     private ChangeRecord getRecordForPath(String path) throws KeeperException.NoNodeException {
         ChangeRecord lastChange = null;
         synchronized (zks.outstandingChanges) {
@@ -387,6 +386,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 if (nodeRecord.childCount > 0) {
                     throw new KeeperException.NotEmptyException(path);
                 }
+                //万一是ttl或则正常节点呢
                 if (EphemeralType.get(nodeRecord.stat.getEphemeralOwner()) == EphemeralType.NORMAL) {
                     throw new KeeperException.BadVersionException(path);
                 }
@@ -636,7 +636,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
     }
 
     private void pRequest2TxnCreate(int type, Request request, Record record, boolean deserialize) throws IOException, KeeperException {
-        //难道还会为false吗
+        //非multi都为true
         if (deserialize) {
             ByteBufferInputStream.byteBuffer2Record(request.request, record);
         }
@@ -667,6 +667,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
 
         //好像只是验证了一下acl设置对不对
         List<ACL> listACL = fixupACL(path, request.authInfo, acl);
+        //已经存在的话是不会再加的 所以删除的时候不就是会差吗
         ChangeRecord parentRecord = getRecordForPath(parentPath);
 
         //检查这个连接是否能创建这个节点
@@ -689,6 +690,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
         }
         boolean ephemeralParent = EphemeralType.get(parentRecord.stat.getEphemeralOwner()) == EphemeralType.NORMAL;
         //临时节点不能有子节点
+        //看来ttl和container的节点是可以有子节点的
         if (ephemeralParent) {
             throw new KeeperException.NoChildrenForEphemeralsException(path);
         }
@@ -978,7 +980,6 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
      * @return verified and expanded ACLs
      * @throws KeeperException.InvalidACLException
      */
-    //acls里面的每个权限都需要满足
     private List<ACL> fixupACL(String path, List<Id> authInfo, List<ACL> acls)
         throws KeeperException.InvalidACLException {
         // check for well formed ACLs
@@ -1010,7 +1011,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                     if (ap == null) {
                         LOG.error("Missing AuthenticationProvider for "
                             + cid.getScheme());
-                    } else if (ap.isAuthenticated()) {
+                    } else if (ap.isAuthenticated()) {//表示这个auth是否能确定一个对象
                         authIdValid = true;
                         rv.add(new ACL(a.getPerms(), cid));
                     }

@@ -124,7 +124,7 @@ public class FileTxnLog implements TxnLog {
 
     File logDir;
     private final boolean forceSync = !System.getProperty("zookeeper.forceSync", "yes").equals("no");
-    //就没变过
+    //表示记录的类别
     long dbId;
     private LinkedList<FileOutputStream> streamsToFlush =
         new LinkedList<FileOutputStream>();
@@ -209,6 +209,7 @@ public class FileTxnLog implements TxnLog {
         if (hdr == null) {
             return false;
         }
+        //说明快照里面可能会出现事务顺序不一致的情况
         if (hdr.getZxid() <= lastZxidSeen) {
             LOG.warn("Current zxid " + hdr.getZxid()
                     + " is <= " + lastZxidSeen + " for "

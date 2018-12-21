@@ -35,7 +35,7 @@ public abstract class UpgradeableSessionTracker implements SessionTracker {
     //应该也是记录了每个会话的超时时间 这个集合是自己创建的目前没发现有和谁共享
     //会传给localsessiontracker
     private ConcurrentMap<Long, Integer> localSessionsWithTimeouts;
-    //更新的是什么呢 会不会是local session升级为global的
+    //正在升级为global session的会话
     private ConcurrentMap<Long, Integer> upgradingSessions;
     protected LocalSessionTracker localSessionTracker;
     protected boolean localSessionsEnabled;
