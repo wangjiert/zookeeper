@@ -64,6 +64,7 @@ public class FollowerRequestProcessor extends ZooKeeperCriticalThread implements
                     ZooTrace.logRequest(LOG, ZooTrace.CLIENT_REQUEST_TRACE_MASK,
                             'F', request, "");
                 }
+                //只有关闭的时候才会加入这个
                 if (request == Request.requestOfDeath) {
                     break;
                 }
@@ -78,7 +79,7 @@ public class FollowerRequestProcessor extends ZooKeeperCriticalThread implements
                 // of the sync operations this follower has pending, so we
                 // add it to pendingSyncs.
                 switch (request.type) {
-                case OpCode.sync:
+                case OpCode.sync://这个类型的请求是客户端发出的吗,还是说是有个同步命令呢
                     zks.pendingSyncs.add(request);
                     zks.getFollower().request(request);
                     break;
@@ -91,7 +92,7 @@ public class FollowerRequestProcessor extends ZooKeeperCriticalThread implements
                 case OpCode.setData:
                 case OpCode.reconfig:
                 case OpCode.setACL:
-                case OpCode.multi:
+                case OpCode.multi://这个为什么不反序列看一下呢,万一不涉及改变整个集群状态的操作就不需要发送到leader了
                 case OpCode.check:
                     zks.getFollower().request(request);
                     break;
@@ -104,7 +105,8 @@ public class FollowerRequestProcessor extends ZooKeeperCriticalThread implements
                     break;
                 }
             }
-        } catch (Exception e) {
+        } catch (Exception e) {//基本上只有发送数据到leader的时候会报错
+            //直接就跳出循环了 也就是说整个处理过程是不可以出错的
             handleException(this.getName(), e);
         }
         LOG.info("FollowerRequestProcessor exited loop!");

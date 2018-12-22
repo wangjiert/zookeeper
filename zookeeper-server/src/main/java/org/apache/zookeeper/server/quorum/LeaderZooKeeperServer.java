@@ -75,7 +75,6 @@ public class LeaderZooKeeperServer extends QuorumZooKeeperServer {
         //就是生成几个不知道干嘛的东西 暂时没什么用
         prepRequestProcessor = new PrepRequestProcessor(this, proposalProcessor);
         prepRequestProcessor.start();
-        //就是有些情况把一个请求变成两个
         firstProcessor = new LeaderRequestProcessor(this, prepRequestProcessor);
 
         setupContainerManager();

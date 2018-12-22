@@ -53,6 +53,7 @@ public class LearnerSessionTracker extends UpgradeableSessionTracker {
 
     private final SessionExpirer expirer;
     // Touch table for the global sessions
+    //global session放在这个里面 在回复ping的时候会发送给leader
     private final AtomicReference<Map<Long, Integer>> touchTable =
         new AtomicReference<Map<Long, Integer>>();
     private final long serverId;

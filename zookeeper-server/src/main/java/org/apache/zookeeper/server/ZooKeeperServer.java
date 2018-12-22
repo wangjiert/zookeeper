@@ -435,6 +435,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
         }
         long id = cnxn.getSessionId();
         int to = cnxn.getSessionTimeout();
+        //更新超时时间而已
         if (!sessionTracker.touchSession(id, to)) {
             throw new MissingSessionException(
                     "No session with sessionid 0x" + Long.toHexString(id)
@@ -1039,6 +1040,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
                     + Long.toHexString(connReq.getLastZxidSeen()));
         }
         ServerMetrics.CONNECTION_REQUEST_COUNT.add(1);
+        //只读客户端是用什么标识的呢
         boolean readOnly = false;
         try {
             //连接数据的最后面是表示这个连接是否是只读的 只读连接的会话id好像可以随意分配吧

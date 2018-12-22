@@ -44,8 +44,8 @@ import java.util.List;
  * @see ZooKeeper#setData(String, byte[], int)
  */
 public abstract class Op {
-    //操作类型
-    //没有看到create2
+    //代表了ttl container create 三种类型
+    //两种特殊加一种普通的创建类型
     private int type;
     private String path;
 
@@ -234,6 +234,7 @@ public abstract class Op {
     public static class Create extends Op {
         protected byte[] data;
         protected List<ACL> acl;
+        //和Op里面的type重复的意义何在,而且Op的type还缩减了类型的可能值
         protected int flags;
 
         private Create(String path, byte[] data, List<ACL> acl, int flags) {
@@ -243,6 +244,7 @@ public abstract class Op {
             this.flags = flags;
         }
 
+        //为什么要缩减到只有三种类型
         private static int getOpcode(CreateMode createMode) {
             if (createMode.isTTL()) {
                 return ZooDefs.OpCode.createTTL;
@@ -265,6 +267,7 @@ public abstract class Op {
             Create op = (Create) o;
 
             boolean aclEquals = true;
+            //自己跟自己比吗
             Iterator<ACL> i = op.acl.iterator();
             for (ACL acl : op.acl) {
                 boolean hasMoreData = i.hasNext();
@@ -299,6 +302,7 @@ public abstract class Op {
         @Override
         void validate() throws KeeperException {
             CreateMode createMode = CreateMode.fromFlag(flags);
+            //检查路径值合法性
             PathUtils.validatePath(getPath(), createMode.isSequential());
             EphemeralType.validateTTL(createMode, -1);
         }

@@ -1940,6 +1940,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
                 leaderChange = updateVote(suggestedLeaderId, zxid);
             } else {
                 long currentLeaderId = getCurrentVote().getId();
+                //这个里面怎么会找不到当前leader呢
                 QuorumServer myleaderInCurQV = prevQV.getVotingMembers().get(currentLeaderId);
                 QuorumServer myleaderInNewQV = qv.getVotingMembers().get(currentLeaderId);
                 leaderChange = (myleaderInCurQV == null || myleaderInCurQV.addr == null ||

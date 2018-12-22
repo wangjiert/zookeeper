@@ -140,14 +140,11 @@ public class LeaderSessionTracker extends UpgradeableSessionTracker {
         return globalSessionTracker.touchSession(sessionId, sessionTimeout);
     }
 
-    //怎么只有允许local session这里的所有会话都进了local呢
-    //是因为这个是leader所以特殊吗 还是follower也一样 一样
-    //那还有会话进global吗
     public long createSession(int sessionTimeout) {
         if (localSessionsEnabled) {
             return localSessionTracker.createSession(sessionTimeout);
         }
-        //和上面的区别就是没有往dbtree的集合里面加
+        //和上面的区别就是没有往集合里面加会话id对应的超时时间
         return globalSessionTracker.createSession(sessionTimeout);
     }
 
