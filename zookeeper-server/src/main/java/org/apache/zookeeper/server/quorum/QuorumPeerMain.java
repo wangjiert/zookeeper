@@ -223,7 +223,7 @@ public class QuorumPeerMain {
           quorumPeer.start();
           quorumPeer.join();
       } catch (InterruptedException e) {
-          // warn, but generally this is ok
+          // warn, but gen erally this is ok
           LOG.warn("Quorum Peer interrupted", e);
       } finally {
           if (metricsProvider != null) {

@@ -598,7 +598,7 @@ public class LearnerHandler extends ZooKeeperThread {
                         leader.zk.touch(sess, to);
                     }
                     break;
-                case Leader.REVALIDATE:
+                case Leader.REVALIDATE://重连的时候验证会话id
                     bis = new ByteArrayInputStream(qp.getData());
                     dis = new DataInputStream(bis);
                     long id = dis.readLong();

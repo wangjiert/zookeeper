@@ -124,8 +124,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
      */
     static final private long superSecret = 0XB3415C00L;
 
-    //正在处理的请求
-    //什么时候加 什么时候减
+    //连接到这个peer的客户端发起的请求数量
     //丢给第一个processor的时候加
     //final processor处理玩之后减1
     private final AtomicInteger requestsInProcess = new AtomicInteger(0);
@@ -766,6 +765,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
                             valid ? generatePasswd(cnxn.getSessionId()) : new byte[16]);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             BinaryOutputArchive bos = BinaryOutputArchive.getArchive(baos);
+            //先把长度写到临时流里面 数据写完之后再换成真实的长度
             bos.writeInt(-1, "len");
             rsp.serialize(bos, "connect");
             if (!cnxn.isOldClient) {
@@ -1256,6 +1256,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
                                         Record txn) {
         ProcessTxnResult rc;
         int opCode = request != null ? request.type : hdr.getType();
+        //是不是只有创建会话的时候才会把会话id赋值给request的对应字段
         long sessionId = request != null ? request.sessionId : hdr.getClientId();
 
         if (opCode == OpCode.createSession) {

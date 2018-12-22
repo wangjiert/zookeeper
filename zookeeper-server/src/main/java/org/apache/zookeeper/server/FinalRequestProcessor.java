@@ -165,6 +165,7 @@ public class FinalRequestProcessor implements RequestProcessor {
         long lastZxid = zks.getZKDatabase().getDataTreeLastProcessedZxid();
 
         String lastOp = "NA";
+        //和增加对应 能进入这里说明客户端连接的就是这个peer所以可以直接减一
         zks.decInProcess();
         Code err = Code.OK;
         Record rsp = null;

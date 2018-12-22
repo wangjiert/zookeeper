@@ -1,0 +1,46 @@
+Leader:
+   配置local session的情况:
+      对应的NIOServerCnxn的selectable设为false
+      对应的selectKey的interestOps设为0
+      把连接对象的超时时间修改为当前时间加上默认的sessionless time
+      根据请求的数据长度判断客户端是否是老版本,然后设置isOldClient为对应值
+      根据请求传递的值设置NIOServerCnxn的sessionTimeout,并更新连接超时时间为当前时间加上这个超时时间
+      设置NIOServerCnxn的throttled为true
+      判断请求数据是否有传递会话id
+         没有id的情况:
+            获得本地的会话id
+            更新会话的超时时间
+            把会话的id和超时时间加入到sessionTracker的一个集合里面
+            创建一个Request对象,new Request(cnxn, sessionId, 0, OpCode.createSession, to, null)
+            设置Request对象的isLocalSession为true
+            更新会话的超时时间
+            给这个请求分配事务id,用的是上一次的,这个事务id应该是没有什么用的
+            向客户端发送回复数据包括会话id 超时时间 密码 protocol version等信息
+            设置NIOServerCnxn的throttled为false
+            设置NIOServerCnxn的initialized为true
+            更新连接的超时时间
+            对应的NIOServerCnxn的selectable设为true
+            对应的selectKey的interestOps设为读写
+         有id的情况: 两次连接要是同一个peer
+            关闭之前的会话
+            检查密码是否正确
+            更新会话超时时间
+            发送回复数据
+            设置session的ower    
+   不配置local session的情况:
+      没有id的情况:
+         获得会话id并记录会话超时时间
+         把会话id和连接加入到连接工厂的集合里面
+         更新会话超时时间
+         再次更新会话超时时间
+         设置会话的ower为空
+         把会话id和超时时间加入到db里面
+         发送回复信息
+      有id的情况:
+Follower:
+   配置local session的情况:
+      没有id的情况:
+      有id的情况:
+   不配置local session的情况:
+      没有id的情况:
+      有id的情况:
