@@ -805,8 +805,6 @@ public class Leader {
        // pending all wait for a quorum of old and new config, so it's not possible to get enough acks
        // for an operation without getting enough acks for preceding ops. But in the future if multiple
        // concurrent reconfigs are allowed, this can happen.
-        //上一个事务还没处理 下一个事务就不会处理
-        //如果下一个事务得到了大部分的确认,上一个事务一定会被确认
        if (outstandingProposals.containsKey(zxid - 1)) return false;
 
        // in order to be committed, a proposal must be accepted by a quorum.

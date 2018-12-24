@@ -54,6 +54,7 @@ public class SyncedLearnerTracker {
         return true;
     }
 
+    //也是要两个都满足呀
     public boolean hasAllQuorums() {
         for (QuorumVerifierAcksetPair qvAckset : qvAcksetPairs) {
             if (!qvAckset.getQuorumVerifier().containsQuorum(qvAckset.getAckset()))
