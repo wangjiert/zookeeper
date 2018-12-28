@@ -757,7 +757,7 @@ public class Leader {
 
        //check if I'm in the new configuration with the same quorum address -
        // if so, I'll remain the leader
-        //万一选举地址变了呢 好像没什么影响 反正把配置发给其他人之后 就都知道了
+        //万一选举地址变了呢 好像没什么影响 选举已经完成了 又不会再次选举
        if (newQVAcksetPair.getQuorumVerifier().getVotingMembers().containsKey(self.getId()) &&
                newQVAcksetPair.getQuorumVerifier().getVotingMembers().get(self.getId()).addr.equals(self.getQuorumAddress())){
            return self.getId();
@@ -766,7 +766,6 @@ public class Leader {
        // acknowledged the reconfig op (there must be a quorum). Choose one of them as
        // current leader candidate
        HashSet<Long> candidates = new HashSet<Long>(newQVAcksetPair.getAckset());
-       //为什么要删除自己呢 万一自己只是地址变了呢
        candidates.remove(self.getId()); // if we're here, I shouldn't be the leader
        long curCandidate = candidates.iterator().next();
 
@@ -831,6 +830,7 @@ public class Leader {
         }
 
         if (p.request == null) {
+            //什么情况会发生呢
             LOG.warn("Going to commmit null: " + p);
         } else if (p.request.getHdr().getType() == OpCode.reconfig) {
             LOG.debug("Committing a reconfiguration! " + outstandingProposals.size());

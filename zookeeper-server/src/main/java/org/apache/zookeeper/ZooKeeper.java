@@ -211,8 +211,6 @@ public class ZooKeeper implements AutoCloseable {
      *
      * @throws IOException in cases of network failure     
      */
-    //看来这个是要客户端自己调用来实现负载均衡了
-    //todo
     public void updateServerList(String connectString) throws IOException {
         ConnectStringParser connectStringParser = new ConnectStringParser(connectString);
         Collection<InetSocketAddress> serverAddresses = connectStringParser.getServerAddresses();
@@ -277,7 +275,6 @@ public class ZooKeeper implements AutoCloseable {
             new HashMap<String, Set<Watcher>>();
         private final Map<String, Set<Watcher>> childWatches =
             new HashMap<String, Set<Watcher>>();
-        //控制什么呢
         //是否禁止自动重新设置监听器
         private boolean disableAutoWatchReset;
 

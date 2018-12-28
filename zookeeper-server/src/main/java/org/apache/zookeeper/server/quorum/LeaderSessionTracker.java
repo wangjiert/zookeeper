@@ -142,6 +142,7 @@ public class LeaderSessionTracker extends UpgradeableSessionTracker {
 
     public long createSession(int sessionTimeout) {
         if (localSessionsEnabled) {
+            //相当于一个完整的添加过程,因为它往id和超时时间的集合里面加入了一个键值对
             return localSessionTracker.createSession(sessionTimeout);
         }
         //和上面的区别就是没有往集合里面加会话id对应的超时时间

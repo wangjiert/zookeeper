@@ -119,10 +119,12 @@ public class Login {
             if (entry.getOptions().get("useTicketCache") != null) {
                 String val = (String)entry.getOptions().get("useTicketCache");
                 if (val.equals("true")) {
+                    //这个不应该是肯定的吗 不然的话没有密码不就报错了
                     isUsingTicketCache = true;
                 }
             }
             if (entry.getOptions().get("principal") != null) {
+                //感觉应该是配的自己
                 principal = (String)entry.getOptions().get("principal");
             }
             //看到这个就更能肯定jaas只有一个模块了
@@ -155,6 +157,9 @@ public class Login {
                         nextRefresh = getRefreshTime(tgt);
                         long expiry = tgt.getEndTime().getTime();
                         Date expiryDate = new Date(expiry);
+                        //Kerberos ticket 有两种生命周期,ticket timelife(票据生命周期)和renewable lifetime(可再生周期)
+                        //如果renewable lifetime > ticket lifetime,那么在票据生命周期内都可以其进行续期,直到达到可再生周期的上限
+                        //当时间达到renewable lifetime后,ticket lifetime结束后将不能继续续期,续期时将会报错 KDC can't fulfill requested option while renewing credentials,之后需要重新申请新的ticket
                         if ((isUsingTicketCache) && (tgt.getEndTime().equals(tgt.getRenewTill()))) {
                             Object[] logPayload = {expiryDate, principal, principal};
                             LOG.error("The TGT cannot be renewed beyond the next expiry date: {}." +

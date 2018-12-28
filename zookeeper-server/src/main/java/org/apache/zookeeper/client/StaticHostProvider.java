@@ -49,12 +49,11 @@ public final class StaticHostProvider implements HostProvider {
     private static final Logger LOG = LoggerFactory
             .getLogger(StaticHostProvider.class);
 
-    //没有修改之前的列表
     private List<InetSocketAddress> serverAddresses = new ArrayList<InetSocketAddress>(
             5);
 
     private Random sourceOfRandomness;
-    //连接的时候会把currentIndex的值赋过来
+
     private int lastIndex = -1;
 
     //应该就是当前取的地址在集合中的顺序
@@ -63,9 +62,6 @@ public final class StaticHostProvider implements HostProvider {
     /**
      * The following fields are used to migrate clients during reconfiguration
      */
-    //重新配置模式 如果之前连接的服务端无法连接了就是设为true
-    //这个到地址是不只有可用连接服务端变少了才会设为true
-    //应该是表示是否已经更新过服务端列表了
     private boolean reconfigMode = false;
 
     private final List<InetSocketAddress> oldServers = new ArrayList<InetSocketAddress>(
@@ -150,12 +146,13 @@ public final class StaticHostProvider implements HostProvider {
         lastIndex = -1;
     }
 
-    //多个为什么只取一个呢 难道说连接服务端的时候不能用0.0.0.0类似的地址
     private InetSocketAddress resolve(InetSocketAddress address) {
         try {
+            //因为之前解析字符串的时候就没有解析过这个地址
             String curHostString = address.getHostString();
             List<InetAddress> resolvedAddresses = new ArrayList<>(Arrays.asList(this.resolver.getAllByName(curHostString)));
             if (resolvedAddresses.isEmpty()) {
+                //返回这个有什么用 明显地址是个错的
                 return address;
             }
             Collections.shuffle(resolvedAddresses);
@@ -274,6 +271,7 @@ public final class StaticHostProvider implements HostProvider {
                 // my server is not in new config, and load on old servers must
                 // be decreased, so connect to
                 // one of the new servers
+                //这该概率不相等啊
                 pNew = 1;
                 pOld = 0;
             }
@@ -327,8 +325,6 @@ public final class StaticHostProvider implements HostProvider {
      *
      * When called, this should be protected by synchronized(this)
      */
-    //如果已经把旧的集合遍历完了 那就直接从新的集合里面拿 如果新的集合也遍历完了那么直接返回null
-    //随机生成一个数来判断从哪个里面取
     private InetSocketAddress nextHostInReconfigMode() {
         //是否在新的服务端候选列表选择
         boolean takeNew = (sourceOfRandomness.nextFloat() <= pNew);
@@ -359,6 +355,7 @@ public final class StaticHostProvider implements HostProvider {
         InetSocketAddress addr;
 
         synchronized(this) {
+            //配置的地址有变化
             if (reconfigMode) {
                 addr = nextHostInReconfigMode();
                 if (addr != null) {
@@ -377,6 +374,7 @@ public final class StaticHostProvider implements HostProvider {
             needToSleep = needToSleep || (currentIndex == lastIndex && spinDelay > 0);
             if (lastIndex == -1) { 
                 // We don't want to sleep on the first ever connect attempt.
+                //这个感觉没什么必要啊
                 lastIndex = 0;
             }
         }

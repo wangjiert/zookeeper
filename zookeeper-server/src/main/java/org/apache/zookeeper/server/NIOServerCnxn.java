@@ -419,8 +419,7 @@ public class NIOServerCnxn extends ServerCnxn {
         return !throttled.get();
     }
 
-    //应该是表示这个连接是否还能继续读取数据
-    //在什么时候这个变量会变
+    //在创建会话的开始会设为true
     private final AtomicBoolean throttled = new AtomicBoolean(false);
 
     // Throttle acceptance of new requests. If this entailed a state change,

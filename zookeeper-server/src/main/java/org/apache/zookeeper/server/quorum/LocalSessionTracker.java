@@ -42,7 +42,7 @@ public class LocalSessionTracker extends SessionTrackerImpl {
 
     public long createSession(int sessionTimeout) {
         long sessionId = super.createSession(sessionTimeout);
-        //这里往dbtree的集合里面加
+        //加到sessiontracker的集合里面
         commitSession(sessionId, sessionTimeout);
         return sessionId;
     }

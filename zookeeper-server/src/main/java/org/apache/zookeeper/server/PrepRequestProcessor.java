@@ -590,7 +590,8 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 request.setTxn(new CreateSessionTxn(to));
                 request.request.rewind();
                 // only add the global session tracker but not to ZKDb
-                //没有加到dbtree的集合里面
+                //这个并没有用啊 难道在什么情况下会出现这个id还没有被记录就进这里吗
+                //看下客户端发送过来的请求会不会导致这个情况
                 zks.sessionTracker.trackSession(request.sessionId, to);
                 zks.setOwner(request.sessionId, request.getOwner());
                 break;
@@ -865,8 +866,6 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
             case OpCode.createSession:
             case OpCode.closeSession:
                 if (!request.isLocalSession()) {
-                    //创建会话也会分配一个事务id
-                    //这里面的东西感觉之前已经做过呀 request里面加入了两个值
                     pRequest2Txn(request.type, zks.getNextZxid(), request,
                                  null, true);
                 }

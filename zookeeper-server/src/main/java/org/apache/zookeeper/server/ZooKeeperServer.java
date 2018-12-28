@@ -128,6 +128,8 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
     //丢给第一个processor的时候加
     //final processor处理玩之后减1
     private final AtomicInteger requestsInProcess = new AtomicInteger(0);
+    //总共有哪些位置锁住了这个对象:
+    //1.FinalRequestProcessor在处理的时候
     final Deque<ChangeRecord> outstandingChanges = new ArrayDeque<>();
     // this data structure must be accessed under the outstandingChanges lock
     //加到里面的东西什么时候用的
@@ -435,7 +437,6 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
         }
         long id = cnxn.getSessionId();
         int to = cnxn.getSessionTimeout();
-        //更新超时时间而已
         if (!sessionTracker.touchSession(id, to)) {
             throw new MissingSessionException(
                     "No session with sessionid 0x" + Long.toHexString(id)
@@ -692,13 +693,12 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
                 && Arrays.equals(passwd, generatePasswd(sessionId));
     }
 
-    //怎么没有设置这个连接的身份信息呢
-    //哇哦 根本就没传 那么是不是只有创建会话之后 再调接口专门设置身份信息呢
     long createSession(ServerCnxn cnxn, byte passwd[], int timeout) {
         if (passwd == null) {
             // Possible since it's just deserialized from a packet on the wire.
             passwd = new byte[0];
         }
+        //local和global的会话区别已经产生了
         long sessionId = sessionTracker.createSession(timeout);
         Random r = new Random(sessionId ^ superSecret);
         //这个随机应该是一定的值，所以密码应该也是个定值，那原密码并没有什么用吧
@@ -707,7 +707,6 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
         to.putInt(timeout);
         cnxn.setSessionId(sessionId);
         Request si = new Request(cnxn, sessionId, 0, OpCode.createSession, to, null);
-        //没做什么
         setLocalSessionFlag(si);
         submitRequest(si);
         return sessionId;
@@ -839,6 +838,8 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
             }
         }
         try {
+            //这个应该是为了业务请求准备的
+            //如果是创建会话的请求就浪费了 创建的时候已经执行过一次
             touch(si.cnxn);
             boolean validpacket = Request.isValid(si.type);
             if (validpacket) {
@@ -1057,8 +1058,6 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
                     + cnxn.getRemoteSocketAddress()
                     + "; will be dropped if server is in r-o mode");
         }
-        //应该是观察者才会是readonly zookeeper server吧
-        //这是不是也说明了客户端在读写连接的时候 连接字符串不能有观察者的地址
         if (!readOnly && this instanceof ReadOnlyZooKeeperServer) {
             String msg = "Refusing session request for not-read-only client "
                 + cnxn.getRemoteSocketAddress();
@@ -1088,6 +1087,8 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
         if (sessionTimeout > maxSessionTimeout) {
             sessionTimeout = maxSessionTimeout;
         }
+        //顺便更新了连接的到期时间
+        //在创建连接和每次收到新的请求时都会更新这个连接的到期时间
         cnxn.setSessionTimeout(sessionTimeout);
         // We don't want to receive any packets until we are sure that the
         // session is setup
@@ -1096,7 +1097,6 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
         //应该是新的连接没有会话id，重连的连接就有会话id
         long sessionId = connReq.getSessionId();
         if (sessionId == 0) {
-            //隨便都能新建会话id吗 难道说会话id这个东西其实是对每个peer独立的
             long id = createSession(cnxn, passwd, sessionTimeout);
             LOG.debug("Client attempting to establish new session:" +
                             " session = 0x{}, zxid = 0x{}, timeout = {}, address = {}",
@@ -1257,12 +1257,13 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
     private ProcessTxnResult processTxn(Request request, TxnHeader hdr,
                                         Record txn) {
         ProcessTxnResult rc;
+        //request为空表示是在follower和leader同步时的调用
         int opCode = request != null ? request.type : hdr.getType();
-        //是不是只有创建会话的时候才会把会话id赋值给request的对应字段
         long sessionId = request != null ? request.sessionId : hdr.getClientId();
 
         if (opCode == OpCode.createSession) {
             if (hdr != null && txn instanceof CreateSessionTxn) {
+                //创建全局的会话
                 CreateSessionTxn cst = (CreateSessionTxn) txn;
                 sessionTracker.commitSession(sessionId, cst.getTimeOut());
             } else if (request == null || !request.isLocalSession()) {

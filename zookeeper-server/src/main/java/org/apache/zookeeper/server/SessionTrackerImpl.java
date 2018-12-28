@@ -260,7 +260,8 @@ public class SessionTrackerImpl extends ZooKeeperCriticalThread implements
         }
     }
 
-    //并没有往dbtree的集合里面加入
+    //会话id加1
+    //把id对应的对象加入到超时集合里面
     public long createSession(int sessionTimeout) {
         long sessionId = nextSessionId.getAndIncrement();
         trackSession(sessionId, sessionTimeout);
@@ -296,7 +297,6 @@ public class SessionTrackerImpl extends ZooKeeperCriticalThread implements
                     + Long.toHexString(id) + " " + sessionTimeout);
         }
 
-        //用不更新sessionById是不是也因为这里用的时候需要这个对象地址是个定值
         updateSessionExpiry(session, sessionTimeout);
         return added;
     }

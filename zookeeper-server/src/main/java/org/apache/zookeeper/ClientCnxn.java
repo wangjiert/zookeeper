@@ -127,13 +127,11 @@ public class ClientCnxn {
     /**
      * These are the packets that have been sent and are waiting for a response.
      */
-    //等待回复的包
     private final LinkedList<Packet> pendingQueue = new LinkedList<Packet>();
 
     /**
      * These are the packets that need to be sent.
      */
-    //发送线程应该就是从这里拿数据
     private final LinkedBlockingDeque<Packet> outgoingQueue = new LinkedBlockingDeque<Packet>();
 
     //连接超时时间要除以可用的服务端数量是不是因为要保证所有服务端连一遍的总时间不能超过这个总超时时间
@@ -158,7 +156,7 @@ public class ClientCnxn {
     //开始的时候是0
     private long sessionId;
 
-    //开始的时候就是全是0的一个字节数组
+    //重新连接的时候有用
     private byte sessionPasswd[] = new byte[16];
 
     /**
@@ -212,7 +210,7 @@ public class ClientCnxn {
      * If any request's response in not received in configured requestTimeout
      * then it is assumed that the response packet is lost.
      */
-    //多久没收到请求的回复包算超时
+    //默认值是0
     private long requestTimeout;
 
     public long getSessionId() {
@@ -407,8 +405,9 @@ public class ClientCnxn {
         this.hostProvider = hostProvider;
         this.chrootPath = chrootPath;
 
-        //超时时间怎么还是被所有可用连接地址平分的
+        //除以可用连接个数是为了在超时时间内可以遍历全部的连接
         connectTimeout = sessionTimeout / hostProvider.size();
+        //为什么是三分之二
         readTimeout = sessionTimeout * 2 / 3;
         readOnly = canBeReadOnly;
 
@@ -770,8 +769,7 @@ public class ClientCnxn {
         finishPacket(p);
     }
 
-    //这个应该是服务端的事务id吧
-
+    //是不是收到一个回复 就把事务id更新到这个字段了
     private volatile long lastZxid;
 
     public long getLastZxid() {
@@ -1530,7 +1528,6 @@ public class ClientCnxn {
     private int xid = 1;
 
     // @VisibleForTesting
-    //这个东西
     volatile States state = States.NOT_CONNECTED;
 
     /*

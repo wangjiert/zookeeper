@@ -45,6 +45,8 @@ public class SaslClientCallbackHandler implements CallbackHandler {
         this.entity = client;
     }
 
+    //从下面的错误信息来看 如果配置了缓冲的话是不会有密码这个回调在里面的
+    //还是说全部都没有了呢 因为这些本来就是用的配置里面的
     public void handle(Callback[] callbacks) throws UnsupportedCallbackException {
         for (Callback callback : callbacks) {
             if (callback instanceof NameCallback) {

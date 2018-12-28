@@ -141,7 +141,7 @@ public class Request {
     static boolean isValid(int type) {
         // make sure this is always synchronized with Zoodefs!!
         switch (type) {
-        case OpCode.notification:
+        case OpCode.notification://这个消息是不是服务端发送给客户端的表示有时间被触发了的类型
             return false;
         case OpCode.check:
         case OpCode.closeSession:

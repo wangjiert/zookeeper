@@ -611,6 +611,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
     }
 
     // sessionMap is used by closeSession()
+    //连接分配到id之后立马就加进来了
     private final ConcurrentHashMap<Long, NIOServerCnxn> sessionMap =
         new ConcurrentHashMap<Long, NIOServerCnxn>();
     // ipMap is used to limit connections per IP

@@ -103,8 +103,6 @@ public class ZKConfig {
         properties.put(JUTE_MAXBUFFER, System.getProperty(JUTE_MAXBUFFER));
         //kinit命令的位置
         properties.put(KINIT_COMMAND, System.getProperty(KINIT_COMMAND));
-        //jass相关吧
-        //好像是bool的一个值
         properties.put(JGSS_NATIVE, System.getProperty(JGSS_NATIVE));
 
         ClientX509Util clientX509Util = new ClientX509Util();
