@@ -148,6 +148,7 @@ abstract class ClientCnxnSocket {
         // read "is read-only" flag
         boolean isRO = false;
         try {
+            //请求是read only返回的并不一定
             isRO = bbia.readBool("readOnly");
         } catch (IOException e) {
             // this is ok -- just a packet from an old server which
@@ -242,7 +243,7 @@ abstract class ClientCnxnSocket {
                     ZKClientConfig.CLIENT_MAX_PACKET_LENGTH_DEFAULT);
             LOG.info("{} value is {} Bytes", ZKConfig.JUTE_MAXBUFFER,
                     packetLen);
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {//能够达到这里说明是配置了的  只是配置的值有问题
             String msg = MessageFormat.format(
                     "Configured value {0} for property {1} can not be parsed to int",
                     clientConfig.getProperty(ZKConfig.JUTE_MAXBUFFER),

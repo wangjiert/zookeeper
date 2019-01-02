@@ -285,6 +285,7 @@ public class Login {
         }
     }
 
+    //不需要登出的吗
     public void shutdown() {
         if ((t != null) && (t.isAlive())) {
             t.interrupt();

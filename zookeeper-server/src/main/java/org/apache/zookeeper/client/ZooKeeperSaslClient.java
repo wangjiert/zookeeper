@@ -232,7 +232,7 @@ public class ZooKeeperSaslClient {
                 LOG.debug("ServerSaslResponseCallback(): using empty data[] as server response (length="+usedata.length+")");
             }
             client.respondToServer(usedata, (ClientCnxn)ctx);
-        }
+                                }
     }
 
     private SaslClient createSaslClient(final String servicePrincipal, final String loginContext)

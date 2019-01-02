@@ -52,6 +52,8 @@ public class ClientCnxnSocketNIO extends ClientCnxnSocket {
 
     ClientCnxnSocketNIO(ZKClientConfig clientConfig) throws IOException {
         this.clientConfig = clientConfig;
+        //设置一个包的最大长度
+        //如果配置的值不是数字就会抛出异常,最终上溯到zookeeper的构造方法抛出异常
         initProperties();
     }
 

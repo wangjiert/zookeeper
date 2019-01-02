@@ -132,9 +132,11 @@ public class ClientCnxn {
     /**
      * These are the packets that need to be sent.
      */
+    //ClientCnxnSocket对象也有指针指向这个变量
     private final LinkedBlockingDeque<Packet> outgoingQueue = new LinkedBlockingDeque<Packet>();
 
-    //连接超时时间要除以可用的服务端数量是不是因为要保证所有服务端连一遍的总时间不能超过这个总超时时间
+    //下面各种超时时间有点多 各有什么关联
+    //连接超时应该就是等待连接建立的最大时间吧 不包括读写
     private int connectTimeout;
 
     /**
@@ -165,6 +167,8 @@ public class ClientCnxn {
      * server on the other side of the wire is partitioned it'll accept
      * read-only clients only.
      */
+    //服务端还会知道自己已经和leader不同步了吗
+    //这个字段貌似没有什么用的样子
     private boolean readOnly;
 
     final String chrootPath;
@@ -394,6 +398,7 @@ public class ClientCnxn {
      *                mode in case of partitioning
      * @throws IOException
      */
+    //如果这个方法抛出了异常, 并没有做任何处理 会导致zookeeper的构造方法里面抛出异常
     public ClientCnxn(String chrootPath, HostProvider hostProvider, int sessionTimeout, ZooKeeper zooKeeper,
             ClientWatchManager watcher, ClientCnxnSocket clientCnxnSocket,
             long sessionId, byte[] sessionPasswd, boolean canBeReadOnly) {
@@ -405,7 +410,8 @@ public class ClientCnxn {
         this.hostProvider = hostProvider;
         this.chrootPath = chrootPath;
 
-        //除以可用连接个数是为了在超时时间内可以遍历全部的连接
+        //为了保证会话超时时间内每个连接都有机会尝试
+        //所以连接超时时间是平分会话超时时间之后的值
         connectTimeout = sessionTimeout / hostProvider.size();
         //为什么是三分之二
         readTimeout = sessionTimeout * 2 / 3;
@@ -1100,6 +1106,7 @@ public class ClientCnxn {
             saslLoginFailed = false;
             if(!isFirstConnect){
                 try {
+                    //睡1s有什么重大影响吗
                     Thread.sleep(r.nextInt(1000));
                 } catch (InterruptedException e) {
                     LOG.warn("Unexpected exception", e);
@@ -1168,10 +1175,12 @@ public class ClientCnxn {
                         if (closing) {
                             break;
                         }
+                        //最开始的时候肯定为null
                         if (rwServerAddress != null) {
                             serverAddress = rwServerAddress;
                             rwServerAddress = null;
                         } else {
+                            //todo 看一下从新配置的时候怎么获得下一个连接地址
                             serverAddress = hostProvider.next(1000);
                         }
                         startConnect(serverAddress);
