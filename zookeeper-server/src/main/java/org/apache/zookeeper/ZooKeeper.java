@@ -484,6 +484,7 @@ public class ZooKeeper implements AutoCloseable {
             switch (type) {
             case None:
                 result.add(defaultWatcher);
+                //是不是因为连接成功的事件大家都不处理所以不清除监听器
                 boolean clear = disableAutoWatchReset && state != Watcher.Event.KeeperState.SyncConnected;
                 synchronized(dataWatches) {
                     for(Set<Watcher> ws: dataWatches.values()) {
@@ -523,6 +524,8 @@ public class ZooKeeper implements AutoCloseable {
                 }
                 break;
             case NodeChildrenChanged:
+                //这个事件应该触发上面的两个事件吧
+                //这个路径应该是父路径吧
                 synchronized (childWatches) {
                     addTo(childWatches.remove(clientPath), result);
                 }

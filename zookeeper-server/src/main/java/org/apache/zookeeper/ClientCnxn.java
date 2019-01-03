@@ -830,6 +830,7 @@ public class ClientCnxn {
         private final ClientCnxnSocket clientCnxnSocket;
         private Random r = new Random();
         //表示是否是第一次连接服务端
+        //在调用primeConnection的时候设为false
         private boolean isFirstConnect = true;
 
         void readResponse(ByteBuffer incomingBuffer) throws IOException {
@@ -1142,6 +1143,7 @@ public class ClientCnxn {
             clientCnxnSocket.connect(addr);
         }
 
+        //这到底是服务端的还是客户端的呢
         private String getServerPrincipal(InetSocketAddress addr) {
             String principalUserName = clientConfig.getProperty(ZKClientConfig.ZK_SASL_CLIENT_USERNAME,
                     ZKClientConfig.ZK_SASL_CLIENT_USERNAME_DEFAULT);
@@ -1415,6 +1417,7 @@ public class ClientCnxn {
                 byte[] _sessionPasswd, boolean isRO) throws IOException {
             negotiatedSessionTimeout = _negotiatedSessionTimeout;
             if (negotiatedSessionTimeout <= 0) {
+                //直接就退出了吧
                 state = States.CLOSED;
 
                 eventThread.queueEvent(new WatchedEvent(

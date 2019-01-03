@@ -88,6 +88,7 @@ public class ClientCnxnSocketNIO extends ClientCnxnSocket {
                     readLength();
                 } else if (!initialized) {
                     readConnectResult();
+                    //????
                     enableRead();
                     if (findSendablePacket(outgoingQueue,
                             sendThread.tunnelAuthInProgress()) != null) {
@@ -112,6 +113,7 @@ public class ClientCnxnSocketNIO extends ClientCnxnSocket {
                     sendThread.tunnelAuthInProgress());
 
             if (p != null) {
+                //这个时候还没发就改时间了
                 updateLastSend();
                 // If we already started writing p, p.bb will already exist
                 if (p.bb == null) {
@@ -279,7 +281,8 @@ public class ClientCnxnSocketNIO extends ClientCnxnSocket {
             sendThread.primeConnection();
         }
     }
-    
+
+    //抛出异常之后 会被SendThread线程捕获然后重新连接新的服务端
     @Override
     void connect(InetSocketAddress addr) throws IOException {
         SocketChannel sock = createSock();
@@ -358,6 +361,8 @@ public class ClientCnxnSocketNIO extends ClientCnxnSocket {
         for (SelectionKey k : selected) {
             SocketChannel sc = ((SocketChannel) k.channel());
             if ((k.readyOps() & SelectionKey.OP_CONNECT) != 0) {
+                //还需要判断一下连接是否完成
+                //服务端的socket还需要自己去accept
                 if (sc.finishConnect()) {
                     updateLastSendAndHeard();
                     updateSocketAddresses();
