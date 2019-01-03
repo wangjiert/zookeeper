@@ -214,7 +214,6 @@ public class ClientCnxn {
      * If any request's response in not received in configured requestTimeout
      * then it is assumed that the response packet is lost.
      */
-    //默认值是0
     private long requestTimeout;
 
     public long getSessionId() {

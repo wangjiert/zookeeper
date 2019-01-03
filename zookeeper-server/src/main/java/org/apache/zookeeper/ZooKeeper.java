@@ -1464,8 +1464,7 @@ public class ZooKeeper implements AutoCloseable {
     {
         final String clientPath = path;
         PathUtils.validatePath(clientPath, createMode.isSequential());
-        //ttl传-1是为了防止其他类型检验会报错吗
-        //怎么感觉这里是必须能为ttl的
+        //创建ttl应该另有方法
         EphemeralType.validateTTL(createMode, -1);
         //还不能为空
         validateACL(acl);
@@ -1477,6 +1476,7 @@ public class ZooKeeper implements AutoCloseable {
         //类型相当于只有两种吗 加上ttl有三种
         h.setType(createMode.isContainer() ? ZooDefs.OpCode.createContainer : ZooDefs.OpCode.create);
         CreateRequest request = new CreateRequest();
+        //传了这个 在接收回复的时候就会直接填充数据进去
         CreateResponse response = new CreateResponse();
         request.setData(data);
         request.setFlags(createMode.toFlag());
