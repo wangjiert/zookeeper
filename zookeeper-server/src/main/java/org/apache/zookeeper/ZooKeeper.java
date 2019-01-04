@@ -292,13 +292,11 @@ public class ZooKeeper implements AutoCloseable {
         }
 
         //rc表示服务端返回的状态
-        //local到底有什么用呢 目前看来只是用来判断rc是否作为参考
         public Map<EventType, Set<Watcher>> removeWatcher(String clientPath,
                 Watcher watcher, WatcherType watcherType, boolean local, int rc)
                 throws KeeperException {
             // Validate the provided znode path contains the given watcher of
             // watcherType
-            //如果没有的话会抛出异常
             containsWatcher(clientPath, watcher, watcherType);
 
             //每个类型对应的监听器集合

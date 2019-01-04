@@ -79,7 +79,7 @@ public class FollowerRequestProcessor extends ZooKeeperCriticalThread implements
                 // of the sync operations this follower has pending, so we
                 // add it to pendingSyncs.
                 switch (request.type) {
-                case OpCode.sync://这个类型的请求是客户端发出的吗,还是说是有个同步命令呢
+                case OpCode.sync:
                     zks.pendingSyncs.add(request);
                     zks.getFollower().request(request);
                     break;
